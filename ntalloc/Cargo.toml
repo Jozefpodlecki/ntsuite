@@ -1,0 +1,11 @@
+[package]
+name = "ntalloc"
+version = "0.1.0"
+authors = ["Jozef Podlecki"]
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+repository = "https://github.com/Jozefpodlecki/ntsuite"
+
+[dependencies]
+ntapi = { path = "../ntapi", features = ["ntmmapi"] }

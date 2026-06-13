@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "ntapi",
+    "ntalloc",
+    "nthook"
+]
+resolver = "3"
