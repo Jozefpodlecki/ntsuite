@@ -4,10 +4,6 @@
 #![allow(non_upper_case_globals)]
 #![allow(unused)]
 
-mod mapped_file_iter;
-
-pub use mapped_file_iter::*;
-
 pub mod ntdef;
 
 #[cfg(feature = "ntmmapi")]
@@ -24,6 +20,16 @@ pub mod ntafd;
 
 #[cfg(feature = "ntioapi")]
 pub mod ntioapi;
+
+#[cfg(feature = "ntrtl")]
+pub mod ntrtl;
+
+#[cfg(feature = "ntpebteb")]
+pub mod ntpebteb;
+
+#[cfg(feature = "ntpsapi")]
+pub mod ntpsapi;
+
 
 #[cfg(not(target_os = "windows"))]
 compile_error!("This module requires Windows target OS");

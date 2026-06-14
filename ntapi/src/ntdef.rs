@@ -2,9 +2,141 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use core::ffi::c_void;
+use core::{ffi::c_void, mem::ManuallyDrop};
 
+
+
+#[repr(C, align(16))]
+pub struct CONTEXT {
+    pub P1Home: DWORD64,
+    pub P2Home: DWORD64,
+    pub P3Home: DWORD64,
+    pub P4Home: DWORD64,
+    pub P5Home: DWORD64,
+    pub P6Home: DWORD64,
+    pub ContextFlags: DWORD,
+    pub MxCsr: DWORD,
+    pub SegCs: WORD,
+    pub SegDs: WORD,
+    pub SegEs: WORD,
+    pub SegFs: WORD,
+    pub SegGs: WORD,
+    pub SegSs: WORD,
+    pub EFlags: DWORD,
+    pub Dr0: DWORD64,
+    pub Dr1: DWORD64,
+    pub Dr2: DWORD64,
+    pub Dr3: DWORD64,
+    pub Dr6: DWORD64,
+    pub Dr7: DWORD64,
+    pub Rax: DWORD64,
+    pub Rcx: DWORD64,
+    pub Rdx: DWORD64,
+    pub Rbx: DWORD64,
+    pub Rsp: DWORD64,
+    pub Rbp: DWORD64,
+    pub Rsi: DWORD64,
+    pub Rdi: DWORD64,
+    pub R8: DWORD64,
+    pub R9: DWORD64,
+    pub R10: DWORD64,
+    pub R11: DWORD64,
+    pub R12: DWORD64,
+    pub R13: DWORD64,
+    pub R14: DWORD64,
+    pub R15: DWORD64,
+    pub Rip: DWORD64,
+    pub u: CONTEXT_u,
+    pub VectorRegister: [M128A; 26],
+    pub VectorControl: DWORD64,
+    pub DebugControl: DWORD64,
+    pub LastBranchToRip: DWORD64,
+    pub LastBranchFromRip: DWORD64,
+    pub LastExceptionToRip: DWORD64,
+    pub LastExceptionFromRip: DWORD64,
+}
+
+#[repr(C)]
+pub union CONTEXT_u {
+    pub FltSave: ManuallyDrop<XSAVE_FORMAT>,
+    pub Dummy: [DWORD; 1],
+}
+
+#[repr(C)]
+pub struct XSAVE_FORMAT {
+    pub ControlWord: WORD,
+    pub StatusWord: WORD,
+    pub TagWord: WORD,
+    pub Reserved1: WORD,
+    pub ErrorOpcode: WORD,
+    pub ErrorOffset: DWORD,
+    pub ErrorSelector: WORD,
+    pub Reserved2: WORD,
+    pub DataOffset: DWORD,
+    pub DataSelector: WORD,
+    pub Reserved3: WORD,
+    pub MxCsr: DWORD,
+    pub MxCsr_Mask: DWORD,
+    pub FloatRegisters: [M128A; 8],
+    pub XmmRegisters: [M128A; 16],
+    pub Reserved4: [UCHAR; 96],
+}
+
+#[repr(C, align(16))]
+pub struct M128A {
+    pub Low: ULONGLONG,
+    pub High: LONGLONG,
+}
+
+#[repr(C)]
+pub struct LUID {
+    pub LowPart: ULONG,
+    pub HighPart: LONG,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct GUID {
+    pub Data1: ULONG,
+    pub Data2: USHORT,
+    pub Data3: USHORT,
+    pub Data4: [UCHAR; 8],
+}
+
+pub type PGUID = *mut GUID;
+pub type VOID = c_void;
+pub type PCHAR = *mut CHAR;
+pub type LPCH = *mut CHAR;
+pub type PCH = *mut CHAR;
+pub type LPCCH = *const CHAR;
+pub type PCCH = *const CHAR;
+pub type NPSTR = *mut CHAR;
+pub type LPSTR = *mut CHAR;
+pub type PSTR = *mut CHAR;
+pub type PZPSTR = *mut PSTR;
+pub type PCZPSTR = *const PSTR;
+pub type LPCSTR = *const CHAR;
+pub type PCSTR = *const CHAR;
+pub type PZPCSTR = *mut PCSTR;
+pub type PCZPCSTR = *const PCSTR;
+pub type PZZSTR = *mut CHAR;
+pub type PCZZSTR = *const CHAR;
+pub type PNZCH = *mut CHAR;
+pub type PCNZCH = *const CHAR;
+
+pub type PLUID = *mut LUID;
+pub type DWORD64 = u64;
+pub type PCONTEXT = *mut CONTEXT;
+pub type PCWSTR = *const u16;
+pub type PWSTR = *mut u16;
+
+pub type LOGICAL = ULONG;
+pub type PLOGICAL = *mut ULONG;
+pub type CSHORT = i16;
+pub type CLONG = ULONG;
 pub type ULONG = u32;
+pub type ULONG64 = u64;
+pub type PULONG_PTR = *mut usize;
 pub type PULONG = *mut ULONG;
 pub type USHORT = u16;
 pub type PUSHORT = *mut USHORT;
@@ -14,6 +146,7 @@ pub type CHAR = i8;
 pub type PSZ = *mut CHAR;
 
 pub type PVOID = *mut c_void;
+pub type PCVOID = *const c_void;
 pub type LPVOID = *mut c_void;
 pub type LPCVOID = *const c_void;
 pub type LPBOOL = *mut BOOL;
@@ -252,11 +385,49 @@ impl NtStatusExt for NTSTATUS {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct UNICODE_STRING {
     pub Length: USHORT,
     pub MaximumLength: USHORT,
     pub Buffer: *mut u16,
 }
+
+pub const IMAGE_SIZEOF_SHORT_NAME: usize = 8;
+
+#[repr(C)]
+pub struct IMAGE_SECTION_HEADER {
+    pub Name: [BYTE; IMAGE_SIZEOF_SHORT_NAME],
+    pub Misc: IMAGE_SECTION_HEADER_Misc,
+    pub VirtualAddress: DWORD,
+    pub SizeOfRawData: DWORD,
+    pub PointerToRawData: DWORD,
+    pub PointerToRelocations: DWORD,
+    pub PointerToLinenumbers: DWORD,
+    pub NumberOfRelocations: WORD,
+    pub NumberOfLinenumbers: WORD,
+    pub Characteristics: DWORD,
+}
+
+#[repr(C)]
+pub union IMAGE_SECTION_HEADER_Misc {
+    pub PhysicalAddress: DWORD,
+    pub VirtualSize: DWORD,
+}
+
+pub type PIMAGE_SECTION_HEADER = *mut IMAGE_SECTION_HEADER;
+
+#[repr(C)]
+pub struct STRING {
+    pub Length: USHORT,
+    pub MaximumLength: USHORT,
+    pub Buffer: PCHAR,
+}
+
+pub type PSTRING = *mut STRING;
+pub type PANSI_STRING = *mut STRING;
+pub type PUNICODE_STRING = *mut UNICODE_STRING;
+pub type PCUNICODE_STRING = *const UNICODE_STRING;
+pub type PCANSI_STRING = PSTRING;
 
 #[repr(C)]
 pub struct OBJECT_ATTRIBUTES {
@@ -439,3 +610,43 @@ pub const FILE_PIPE_CONNECTED_STATE: ULONG = 0x00000003;
 pub const FILE_PIPE_CLOSING_STATE: ULONG = 0x00000004;
 pub const FILE_PIPE_CLIENT_END: ULONG = 0x00000000;
 pub const FILE_PIPE_SERVER_END: ULONG = 0x00000001;
+
+#[repr(C)]
+pub struct PROCESSOR_NUMBER {
+    pub Group: USHORT,
+    pub Number: UCHAR,
+    pub Reserved: UCHAR,
+}
+
+pub type PPROCESSOR_NUMBER = *mut PROCESSOR_NUMBER;
+
+#[repr(C)]
+pub struct SID_IDENTIFIER_AUTHORITY {
+    pub Value: [BYTE; 6],
+}
+
+pub type PSID_IDENTIFIER_AUTHORITY = *mut SID_IDENTIFIER_AUTHORITY;
+
+#[repr(C)]
+pub struct _IMAGE_RUNTIME_FUNCTION_ENTRY {
+    pub BeginAddress: DWORD,
+    pub EndAddress: DWORD,
+    pub u: IMAGE_RUNTIME_FUNCTION_ENTRY_u,
+}
+
+#[repr(C)]
+pub union IMAGE_RUNTIME_FUNCTION_ENTRY_u {
+    pub UnwindInfoAddress: DWORD,
+    pub UnwindData: DWORD,
+}
+
+pub type _PIMAGE_RUNTIME_FUNCTION_ENTRY = *mut _IMAGE_RUNTIME_FUNCTION_ENTRY;
+pub type IMAGE_RUNTIME_FUNCTION_ENTRY = _IMAGE_RUNTIME_FUNCTION_ENTRY;
+pub type PRUNTIME_FUNCTION = *mut IMAGE_RUNTIME_FUNCTION_ENTRY;
+
+pub const PROCESS_CREATE_FLAGS_LARGE_PAGE_SYSTEM_DLL: ULONG = 0x00000020;
+pub const PROCESS_CREATE_FLAGS_PROTECTED_PROCESS: ULONG = 0x00000040;
+pub const PROCESS_CREATE_FLAGS_CREATE_SESSION: ULONG = 0x00000080;
+pub const PROCESS_CREATE_FLAGS_INHERIT_FROM_PARENT: ULONG = 0x00000100;
+pub const PROCESS_CREATE_FLAGS_SUSPENDED: ULONG = 0x00000200;
+pub const PROCESS_CREATE_FLAGS_EXTENDED_UNKNOWN: ULONG = 0x00000400;

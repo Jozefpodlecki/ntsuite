@@ -3,7 +3,8 @@ use core::ops::Add;
 use core::ptr::{self, NonNull};
 use core::ffi::c_void;
 
-use ntapi::{MappedFileIterator, ntdef::*};
+use ntapi::{ntdef::*};
+use tools::MappedFileIterator;
 
 pub type PVOID = *mut c_void;
 pub type ULONG = u32;

@@ -2,6 +2,9 @@
 members = [
     "ntapi",
     "ntalloc",
-    "nthook"
+    "nthook",
+    "tools",
+    "generator",
+    "ntsyscalls"
 ]
 resolver = "3"

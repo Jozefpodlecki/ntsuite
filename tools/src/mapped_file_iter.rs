@@ -1,4 +1,5 @@
-use crate::{ntdef::*, ntmmapi::*};
+use ntapi::{ntdef::*, ntmmapi::*};
+
 
 const MAX_MODULE_NAME_LEN: usize = 260;
 

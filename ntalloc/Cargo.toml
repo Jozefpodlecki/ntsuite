@@ -9,3 +9,4 @@ repository = "https://github.com/Jozefpodlecki/ntsuite"
 
 [dependencies]
 ntapi = { path = "../ntapi", features = ["ntmmapi"] }
+tools = { path = "../tools" }

@@ -1489,14 +1489,6 @@ pub struct SID {
 pub type PSID = *mut SID;
 
 #[repr(C)]
-pub struct GUID {
-    pub Data1: ULONG,
-    pub Data2: USHORT,
-    pub Data3: USHORT,
-    pub Data4: [UCHAR; 8],
-}
-
-#[repr(C)]
 pub struct FILE_ID_128 {
     pub Identifier: [UCHAR; 16],
 }
