@@ -1,53 +1,69 @@
 use codegen::Scope;
+use log::info;
 use std::fs;
 use anyhow::Result;
 use std::collections::HashMap;
 
-use crate::types::{Function, FunctionCategory};
+use crate::{data::V10_0_26100_8521_SIGNATURES, types::{Function, FunctionCategory}};
 
-pub fn generate_code(functions: Vec<Function>) -> Result<()> {
+pub fn generate_code(version: String, functions: Vec<Function>) -> Result<()> {
     let mut scope = Scope::new();
-    let mut categorized: HashMap<&'static str, Vec<Function>> = HashMap::new();
     
-    for func in functions {
-        let category_name = match func.category {
-            FunctionCategory::Syscall(_) => "syscalls",
-            FunctionCategory::Rtl => "rtl",
-            FunctionCategory::Rtlp => "rtlp",
-            FunctionCategory::Ldr => "ldr",
-            FunctionCategory::Tpp => "tpp",
-            FunctionCategory::Etw => "etw",
-            FunctionCategory::Avrfp => "avrfp",
-            FunctionCategory::String => "string",
-            FunctionCategory::Feature => "feature",
-            FunctionCategory::Resource => "resource",
-            FunctionCategory::Other => "other",
+    let version_sanitized = version.replace('.', "_");
+    let file_name = format!("v{version_sanitized}");
+
+    let total = functions
+        .iter()
+        .filter(|f| matches!(f.category, FunctionCategory::Syscall(_)));
+
+    println!("{}", total.count());
+
+    for func in functions
+        .iter()
+        .filter(|f| matches!(f.category, FunctionCategory::Syscall(_)))
+    {
+    
+
+        let number = match func.category {
+            FunctionCategory::Syscall(number) => number,
+            _ => continue,
         };
-        categorized.entry(category_name).or_default().push(func);
-    }
-    
-    for (module_name, module_functions) in categorized {
-        let module = scope.new_module(module_name);
         
-        for func in module_functions {
-            match func.category {
-                FunctionCategory::Syscall(num) => {
-                    let fn_name = format!("nt_{}", func.name.trim_start_matches("Nt"));
-                    let mut f = module.new_fn(&fn_name);
-                    f.vis("pub");
-                    f.line(&format!("// Syscall number: 0x{:X} ({})", num, num));
-                    f.line("unimplemented!()");
-                }
-                _ => {
-                    let mut f = module.new_fn(&func.name);
-                    f.vis("pub");
-                    f.line("unimplemented!()");
-                }
+        let signature = match V10_0_26100_8521_SIGNATURES.get(func.name.as_str()) {
+            Some(value) => value,
+            None => {
+                info!("Skipping {}", func.name);
+                continue;
+            },
+        };
+
+        let mut f = scope.new_fn(&func.name);
+            f.vis("pub");
+            f.ret(signature.return_type);
+            f.attr("unsafe(naked)");
+
+            for (kind, name) in &signature.parameters {
+                f.arg(format!("\n\t{name}"), kind);
             }
-        }
+
+            let asm = format!(
+    r#"core::arch::naked_asm!(
+        "mov r10, rcx",
+        "mov eax, {}",
+        "syscall",
+        "ret"
+    );"#,
+                number
+            );
+            f.line(&asm);
     }
     
-    let output = scope.to_string();
-    fs::write("generated.rs", output)?;
+    let mut output = scope.to_string();
+output = r#"use ntapi::{ntdef::*, ntexapi::*, ntioapi::*, ntmmapi::*, ntseapi::*, ntrtl::*, nttmapi::*};
+
+"#.to_string() + &output;
+    let output_path = format!(r#"C:\repos\ntsuite\ntsyscalls\src\{file_name}.rs"#);
+    fs::write(output_path, output)?;
+    
     Ok(())
 }

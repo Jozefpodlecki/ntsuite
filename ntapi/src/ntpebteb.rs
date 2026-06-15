@@ -1,15 +1,16 @@
-use core::mem::ManuallyDrop;
 
 use crate::{ntdef::*, ntrtl::*};
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub union TEB_u {
-    pub CurrentIdealProcessor: ManuallyDrop<PROCESSOR_NUMBER>,
+    pub CurrentIdealProcessor: PROCESSOR_NUMBER,
     pub IdealProcessorValue: ULONG,
-    pub s: ManuallyDrop<TEB_u_s>,
+    pub s: TEB_u_s,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct TEB_u_s {
     pub BypassProcessFree: ULONG,
     pub Reserved: ULONG,
@@ -294,10 +295,11 @@ pub struct PEB {
 #[repr(C)]
 pub union PEB_U {
     pub CrossProcessFlags: ULONG,
-    pub CrossProcessFlagsBits: ManuallyDrop<PEB_U_BITS>,
+    pub CrossProcessFlagsBits: PEB_U_BITS,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct PEB_U_BITS {
     pub ProcessInJob: ULONG,
     pub ProcessInitializing: ULONG,

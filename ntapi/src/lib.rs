@@ -5,6 +5,43 @@
 #![allow(unused)]
 
 pub mod ntdef;
+pub mod ntstatus;
+
+#[cfg(feature = "ntpnpapi")]
+pub mod ntpnpapi;
+
+#[cfg(feature = "evntrace")]
+pub mod evntrace;
+
+#[cfg(feature = "ntdbg")]
+pub mod ntdbg;
+
+#[cfg(feature = "ntmisc")]
+pub mod ntmisc;
+
+#[cfg(feature = "ntwmi")]
+pub mod ntwmi;
+
+#[cfg(feature = "ntregapi")]
+pub mod ntregapi;
+
+#[cfg(feature = "ntzwapi")]
+pub mod ntzwapi;
+
+#[cfg(feature = "nttmapi")]
+pub mod nttmapi;
+
+#[cfg(feature = "ntseapi")]
+pub mod ntseapi;
+
+#[cfg(feature = "ntpoapi")]
+pub mod ntpoapi;
+
+#[cfg(feature = "ntexapi")]
+pub mod ntexapi;
+
+#[cfg(feature = "ntlpcapi")]
+pub mod ntlpcapi;
 
 #[cfg(feature = "ntmmapi")]
 pub mod ntmmapi;

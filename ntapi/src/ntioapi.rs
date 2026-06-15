@@ -1,4 +1,3 @@
-use core::mem::ManuallyDrop;
 use crate::ntdef::*;
 
 pub const FILE_SHARE_NONE: u32 = 0x00000000;
@@ -745,22 +744,25 @@ pub struct FILE_REMOTE_PROTOCOL_INFORMATION {
 
 #[repr(C)]
 pub union FILE_REMOTE_PROTOCOL_INFORMATION_SPECIFIC {
-    pub Smb2: ManuallyDrop<FILE_REMOTE_PROTOCOL_INFORMATION_SMB2>,
+    pub Smb2: FILE_REMOTE_PROTOCOL_INFORMATION_SMB2,
     pub Reserved: [ULONG; 16],
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct FILE_REMOTE_PROTOCOL_INFORMATION_SMB2 {
     pub Server: FILE_REMOTE_PROTOCOL_INFORMATION_SMB2_SERVER,
     pub Share: FILE_REMOTE_PROTOCOL_INFORMATION_SMB2_SHARE,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct FILE_REMOTE_PROTOCOL_INFORMATION_SMB2_SERVER {
     pub Capabilities: ULONG,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct FILE_REMOTE_PROTOCOL_INFORMATION_SMB2_SHARE {
     pub Capabilities: ULONG,
     pub ShareFlags: ULONG,
@@ -996,10 +998,11 @@ pub struct FILE_MEMORY_PARTITION_INFORMATION {
 #[repr(C)]
 pub union FILE_MEMORY_PARTITION_INFORMATION_FLAGS {
     pub AllFlags: ULONG,
-    pub bits: ManuallyDrop<FILE_MEMORY_PARTITION_INFORMATION_FLAGS_BITS>,
+    pub bits: FILE_MEMORY_PARTITION_INFORMATION_FLAGS_BITS,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct FILE_MEMORY_PARTITION_INFORMATION_FLAGS_BITS {
     pub NoCrossPartitionAccess: u32,
     pub Spare: [u32; 3],
@@ -1479,28 +1482,11 @@ pub type PFILE_FS_GUID_INFORMATION = *mut FILE_FS_GUID_INFORMATION;
 pub type DEVICE_TYPE = ULONG;
 
 #[repr(C)]
-pub struct SID {
-    pub Revision: UCHAR,
-    pub SubAuthorityCount: UCHAR,
-    pub IdentifierAuthority: [UCHAR; 6],
-    pub SubAuthority: [ULONG; 1],
-}
-
-pub type PSID = *mut SID;
-
-#[repr(C)]
 pub struct FILE_ID_128 {
     pub Identifier: [UCHAR; 16],
 }
 
 pub type STORAGE_RESERVE_ID = ULONG;
-
-pub type PCUNICODE_STRING = *const UNICODE_STRING;
-pub type PCOBJECT_ATTRIBUTES = *const OBJECT_ATTRIBUTES;
-pub type PLARGE_INTEGER = *mut LARGE_INTEGER;
-pub type PULONG = *mut ULONG;
-pub type PULONGLONG = *mut ULONGLONG;
-pub type PFILE_SEGMENT_ELEMENT = *mut core::ffi::c_void;
 
 unsafe extern "system" {
     pub fn NtCreateFile(
@@ -2024,6 +2010,7 @@ pub const SYMLINK_DIRECTORY: u32 = 0x80000000;
 pub const SYMLINK_FILE: u32 = 0x40000000;
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct REPARSE_DATA_BUFFER {
     pub ReparseTag: ULONG,
     pub ReparseDataLength: USHORT,
@@ -2032,14 +2019,16 @@ pub struct REPARSE_DATA_BUFFER {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub union REPARSE_DATA_BUFFER_GENERIC {
-    pub SymbolicLinkReparseBuffer: ManuallyDrop<REPARSE_DATA_BUFFER_SYMBOLIC_LINK>,
-    pub MountPointReparseBuffer: ManuallyDrop<REPARSE_DATA_BUFFER_MOUNT_POINT>,
-    pub AppExecLinkReparseBuffer: ManuallyDrop<REPARSE_DATA_BUFFER_APP_EXEC_LINK>,
-    pub GenericReparseBuffer: ManuallyDrop<REPARSE_DATA_BUFFER_GENERIC_DATA>,
+    pub SymbolicLinkReparseBuffer: REPARSE_DATA_BUFFER_SYMBOLIC_LINK,
+    pub MountPointReparseBuffer: REPARSE_DATA_BUFFER_MOUNT_POINT,
+    pub AppExecLinkReparseBuffer: REPARSE_DATA_BUFFER_APP_EXEC_LINK,
+    pub GenericReparseBuffer: REPARSE_DATA_BUFFER_GENERIC_DATA,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct REPARSE_DATA_BUFFER_SYMBOLIC_LINK {
     pub SubstituteNameOffset: USHORT,
     pub SubstituteNameLength: USHORT,
@@ -2050,6 +2039,7 @@ pub struct REPARSE_DATA_BUFFER_SYMBOLIC_LINK {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct REPARSE_DATA_BUFFER_MOUNT_POINT {
     pub SubstituteNameOffset: USHORT,
     pub SubstituteNameLength: USHORT,
@@ -2059,12 +2049,14 @@ pub struct REPARSE_DATA_BUFFER_MOUNT_POINT {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct REPARSE_DATA_BUFFER_APP_EXEC_LINK {
     pub StringCount: ULONG,
     pub StringList: [WCHAR; 1],
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct REPARSE_DATA_BUFFER_GENERIC_DATA {
     pub DataBuffer: [UCHAR; 1],
 }
@@ -2084,8 +2076,8 @@ pub struct REPARSE_DATA_BUFFER_EX {
 
 #[repr(C)]
 pub union REPARSE_DATA_BUFFER_EX_REPARSE_BUFFER {
-    pub ReparseDataBuffer: ManuallyDrop<REPARSE_DATA_BUFFER>,
-    pub ReparseGuidDataBuffer: ManuallyDrop<REPARSE_GUID_DATA_BUFFER>,
+    pub ReparseDataBuffer: REPARSE_DATA_BUFFER,
+    pub ReparseGuidDataBuffer: REPARSE_GUID_DATA_BUFFER,
 }
 
 pub type PREPARSE_DATA_BUFFER_EX = *mut REPARSE_DATA_BUFFER_EX;
@@ -2098,6 +2090,7 @@ pub const REPARSE_GUID_DATA_BUFFER_EX_HEADER_SIZE: usize = 32;
 pub const REPARSE_DATA_BUFFER_EX_HEADER_SIZE: usize = 32;
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct REPARSE_GUID_DATA_BUFFER {
     pub ReparseTag: ULONG,
     pub ReparseDataLength: USHORT,
@@ -2427,3 +2420,65 @@ pub struct FILE_NOTIFY_FULL_INFORMATION {
 }
 
 pub type PFILE_NOTIFY_FULL_INFORMATION = *mut FILE_NOTIFY_FULL_INFORMATION;
+
+pub const FILE_NOTIFY_CHANGE_FILE_NAME: u32 = 0x00000001;
+pub const FILE_NOTIFY_CHANGE_DIR_NAME: u32 = 0x00000002;
+pub const FILE_NOTIFY_CHANGE_NAME: u32 = 0x00000003;
+pub const FILE_NOTIFY_CHANGE_ATTRIBUTES: u32 = 0x00000004;
+pub const FILE_NOTIFY_CHANGE_SIZE: u32 = 0x00000008;
+pub const FILE_NOTIFY_CHANGE_LAST_WRITE: u32 = 0x00000010;
+pub const FILE_NOTIFY_CHANGE_LAST_ACCESS: u32 = 0x00000020;
+pub const FILE_NOTIFY_CHANGE_CREATION: u32 = 0x00000040;
+pub const FILE_NOTIFY_CHANGE_EA: u32 = 0x00000080;
+pub const FILE_NOTIFY_CHANGE_SECURITY: u32 = 0x00000100;
+pub const FILE_NOTIFY_CHANGE_STREAM_NAME: u32 = 0x00000200;
+pub const FILE_NOTIFY_CHANGE_STREAM_SIZE: u32 = 0x00000400;
+pub const FILE_NOTIFY_CHANGE_STREAM_WRITE: u32 = 0x00000800;
+pub const FILE_NOTIFY_VALID_MASK: u32 = 0x00000fff;
+
+pub const FILE_ACTION_ADDED: u32 = 0x00000001;
+pub const FILE_ACTION_REMOVED: u32 = 0x00000002;
+pub const FILE_ACTION_MODIFIED: u32 = 0x00000003;
+pub const FILE_ACTION_RENAMED_OLD_NAME: u32 = 0x00000004;
+pub const FILE_ACTION_RENAMED_NEW_NAME: u32 = 0x00000005;
+pub const FILE_ACTION_ADDED_STREAM: u32 = 0x00000006;
+pub const FILE_ACTION_REMOVED_STREAM: u32 = 0x00000007;
+pub const FILE_ACTION_MODIFIED_STREAM: u32 = 0x00000008;
+pub const FILE_ACTION_REMOVED_BY_DELETE: u32 = 0x00000009;
+pub const FILE_ACTION_ID_NOT_TUNNELLED: u32 = 0x0000000A;
+pub const FILE_ACTION_TUNNELLED_ID_COLLISION: u32 = 0x0000000B;
+
+pub const FILE_QUERY_RESTART_SCAN: u32 = 0x00000001;
+pub const FILE_QUERY_RETURN_SINGLE_ENTRY: u32 = 0x00000002;
+pub const FILE_QUERY_INDEX_SPECIFIED: u32 = 0x00000004;
+pub const FILE_QUERY_RETURN_ON_DISK_ENTRIES_ONLY: u32 = 0x00000008;
+pub const FILE_QUERY_NO_CURSOR_UPDATE: u32 = 0x00000010;
+
+pub const FLUSH_FLAGS_FILE_DATA_ONLY: u32 = 0x00000001;
+pub const FLUSH_FLAGS_NO_SYNC: u32 = 0x00000002;
+pub const FLUSH_FLAGS_FILE_DATA_SYNC_ONLY: u32 = 0x00000004;
+pub const FLUSH_FLAGS_FLUSH_AND_PURGE: u32 = 0x00000008;
+
+pub const FILE_COMPUTER_NAME_LENGTH: usize = 15;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FSINFOCLASS {
+    FileFsVolumeInformation = 1,
+    FileFsLabelInformation = 2,
+    FileFsSizeInformation = 3,
+    FileFsDeviceInformation = 4,
+    FileFsAttributeInformation = 5,
+    FileFsControlInformation = 6,
+    FileFsFullSizeInformation = 7,
+    FileFsObjectIdInformation = 8,
+    FileFsDriverPathInformation = 9,
+    FileFsVolumeFlagsInformation = 10,
+    FileFsSectorSizeInformation = 11,
+    FileFsDataCopyInformation = 12,
+    FileFsMetadataSizeInformation = 13,
+    FileFsFullSizeInformationEx = 14,
+    FileFsGuidInformation = 15,
+    FileFsMaximumInformation = 16,
+}
+pub type PFSINFOCLASS = *mut FSINFOCLASS;

@@ -775,6 +775,10 @@ dependencies = [
 [[package]]
 name = "ntapi"
 version = "0.1.0"
+dependencies = [
+ "tools",
+ "widestring",
+]
 
 [[package]]
 name = "nthook"
@@ -786,6 +790,9 @@ dependencies = [
 [[package]]
 name = "ntsyscalls"
 version = "0.1.0"
+dependencies = [
+ "ntapi",
+]
 
 [[package]]
 name = "nu-ansi-term"
@@ -1713,6 +1720,12 @@ checksum = "52f5ee44c96cf55f1b349600768e3ece3a8f26010c05265ab73f945bb1a2eb9d"
 dependencies = [
  "rustls-pki-types",
 ]
+
+[[package]]
+name = "widestring"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72069c3113ab32ab29e5584db3c6ec55d416895e60715417b5b883a357c3e471"
 
 [[package]]
 name = "winapi"

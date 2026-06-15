@@ -1,6 +1,5 @@
 use core::ptr;
 
-use core::mem::ManuallyDrop;
 use crate::ntdef::*;
 use crate::ntioapi::IO_STATUS_BLOCK;
 
@@ -169,10 +168,11 @@ pub struct MEMORY_WORKING_SET_INFORMATION {
 #[repr(C)]
 pub union MEMORY_REGION_INFORMATION_TYPE {
     pub RegionType: u32,
-    pub bits: ManuallyDrop<MEMORY_REGION_INFORMATION_TYPE_BITS>,
+    pub bits: MEMORY_REGION_INFORMATION_TYPE_BITS,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct MEMORY_REGION_INFORMATION_TYPE_BITS {
     pub Private: u32,
     pub MappedDataFile: u32,
@@ -222,12 +222,13 @@ pub enum MEMORY_WORKING_SET_EX_LOCATION {
 #[repr(C)]
 pub union MEMORY_WORKING_SET_EX_BLOCK {
     pub Flags: ULONG_PTR,
-    pub Valid: ManuallyDrop<MEMORY_WORKING_SET_EX_BLOCK_VALID>,
-    pub Invalid: ManuallyDrop<MEMORY_WORKING_SET_EX_BLOCK_INVALID>,
+    pub Valid: MEMORY_WORKING_SET_EX_BLOCK_VALID,
+    pub Invalid: MEMORY_WORKING_SET_EX_BLOCK_INVALID,
 }
 
 #[cfg(target_pointer_width = "64")]
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct MEMORY_WORKING_SET_EX_BLOCK_VALID {
     pub Valid: u64,
     pub ShareCount: u64,
@@ -244,6 +245,7 @@ pub struct MEMORY_WORKING_SET_EX_BLOCK_VALID {
 
 #[cfg(target_pointer_width = "64")]
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct MEMORY_WORKING_SET_EX_BLOCK_INVALID {
     pub Valid: u64,
     pub Reserved0: u64,
@@ -272,10 +274,11 @@ pub struct MEMORY_SHARED_COMMIT_INFORMATION {
 #[repr(C)]
 pub union MEMORY_IMAGE_INFORMATION_FLAGS {
     pub ImageFlags: ULONG,
-    pub bits: ManuallyDrop<MEMORY_IMAGE_INFORMATION_FLAGS_BITS>,
+    pub bits: MEMORY_IMAGE_INFORMATION_FLAGS_BITS,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct MEMORY_IMAGE_INFORMATION_FLAGS_BITS {
     pub ImagePartialMap: u32,
     pub ImageNotExecutable: u32,
@@ -309,10 +312,11 @@ pub enum MEMORY_PHYSICAL_CONTIGUITY_UNIT_STATE {
 #[repr(C)]
 pub union MEMORY_PHYSICAL_CONTIGUITY_UNIT_INFORMATION {
     pub AllInformation: ULONG,
-    pub bits: ManuallyDrop<MEMORY_PHYSICAL_CONTIGUITY_UNIT_INFORMATION_BITS>,
+    pub bits: MEMORY_PHYSICAL_CONTIGUITY_UNIT_INFORMATION_BITS,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct MEMORY_PHYSICAL_CONTIGUITY_UNIT_INFORMATION_BITS {
     pub State: u32,
     pub Reserved: u32,
@@ -753,10 +757,11 @@ pub struct MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION {
 #[repr(C)]
 pub union MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION_FLAGS {
     pub AllFlags: ULONG,
-    pub bits: ManuallyDrop<MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION_FLAGS_BITS>,
+    pub bits: MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION_FLAGS_BITS,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION_FLAGS_BITS {
     pub CommitEvents: u32,
     pub Spare: u32,
@@ -1118,7 +1123,6 @@ pub struct MEM_EXTENDED_PARAMETER {
     pub ULong: ULONG,
 }
 
-pub type PIO_STATUS_BLOCK = *mut IO_STATUS_BLOCK;
 pub type PMEMORY_WORKING_SET_BLOCK = *mut MEMORY_WORKING_SET_BLOCK;
 pub type PMEMORY_WORKING_SET_INFORMATION = *mut MEMORY_WORKING_SET_INFORMATION;
 pub type PMEMORY_REGION_INFORMATION = *mut MEMORY_REGION_INFORMATION;

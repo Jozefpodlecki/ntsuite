@@ -3,19 +3,6 @@ use core::ffi::{c_void, CStr};
 
 use crate::ntdef::*;
 
-
-
-#[repr(C)]
-#[derive(Debug)]
-pub struct OBJECT_ATTRIBUTES {
-    pub Length: ULONG,
-    pub RootDirectory: HANDLE,
-    pub ObjectName: *mut UNICODE_STRING,
-    pub Attributes: ULONG,
-    pub SecurityDescriptor: *mut c_void,
-    pub SecurityQualityOfService: *mut c_void,
-}
-
 pub const OBJECT_TYPE_CREATE: ACCESS_MASK = 0x0001;
 pub const OBJECT_TYPE_ALL_ACCESS: ACCESS_MASK = STANDARD_RIGHTS_REQUIRED | OBJECT_TYPE_CREATE;
 

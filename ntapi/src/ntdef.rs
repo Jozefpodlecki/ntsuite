@@ -1,10 +1,9 @@
-
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
 use core::{ffi::c_void, mem::ManuallyDrop};
 
-
+use crate::ntseapi::SECURITY_IMPERSONATION_LEVEL;
 
 #[repr(C, align(16))]
 pub struct CONTEXT {
@@ -104,6 +103,8 @@ pub struct GUID {
 }
 
 pub type PGUID = *mut GUID;
+pub type LPCGUID = *const GUID;
+pub type PCGUID = *const GUID;
 pub type VOID = c_void;
 pub type PCHAR = *mut CHAR;
 pub type LPCH = *mut CHAR;
@@ -129,13 +130,17 @@ pub type DWORD64 = u64;
 pub type PCONTEXT = *mut CONTEXT;
 pub type PCWSTR = *const u16;
 pub type PWSTR = *mut u16;
+pub type PCZZWSTR = *const u16;
 
+pub type PLONG = *mut LONG;
 pub type LOGICAL = ULONG;
 pub type PLOGICAL = *mut ULONG;
 pub type CSHORT = i16;
 pub type CLONG = ULONG;
 pub type ULONG = u32;
 pub type ULONG64 = u64;
+pub type PLONG64 = *mut i64;
+pub type PULONG64 = *mut u64;
 pub type PULONG_PTR = *mut usize;
 pub type PULONG = *mut ULONG;
 pub type USHORT = u16;
@@ -171,8 +176,10 @@ pub type INT = i32;
 pub type LONG = i32;
 pub type UINT = u32;
 pub type PUINT = *mut u32;
+pub type UINT32 = u32;
 pub type BOOLEAN = u8;
 pub type PBOOLEAN = *mut BOOLEAN;
+pub type KTMOBJECT_TYPE = i32;
 
 pub type SIZE_T = ULONG_PTR;
 pub type PSIZE_T = *mut SIZE_T;
@@ -182,6 +189,10 @@ pub type LONGLONG = i64;
 pub type ULONGLONG = u64;
 pub type PLONGLONG = *mut LONGLONG;
 pub type PULONGLONG = *mut ULONGLONG;
+pub type PCRM_PROTOCOL_ID = *const c_void;
+pub type TRANSACTION_INFORMATION_CLASS = i32;
+pub type PLCID = *mut u32;
+pub type PTRANSACTION_NOTIFICATION = *mut c_void;
 
 pub const MAXLONGLONG: LONGLONG = 0x7fffffffffffffff;
 
@@ -189,10 +200,17 @@ pub type USN = LONGLONG;
 
 pub type HANDLE = *mut c_void;
 pub type ACCESS_MASK = u32;
+pub type PACCESS_TOKEN = PVOID;
 pub type NTSTATUS = i32;
+pub type PNTSTATUS = *mut NTSTATUS;
 pub type PSID = *mut c_void;
 pub type PSECURITY_DESCRIPTOR = *mut c_void;
 pub type SECURITY_INFORMATION = u32;
+pub type LPGUID = *mut GUID;
+pub type LANGID = u16;
+pub type RESOURCEMANAGER_INFORMATION_CLASS = i32;
+pub type PPRIVILEGE_SET = *mut c_void;
+pub type TRANSACTIONMANAGER_INFORMATION_CLASS = i32;
 
 #[cfg(target_pointer_width = "64")]
 pub type INT_PTR = i64;
@@ -433,25 +451,31 @@ pub type PCANSI_STRING = PSTRING;
 pub struct OBJECT_ATTRIBUTES {
     pub Length: ULONG,
     pub RootDirectory: HANDLE,
-    pub ObjectName: *mut UNICODE_STRING,
+    pub ObjectName: PUNICODE_STRING,
     pub Attributes: ULONG,
     pub SecurityDescriptor: PVOID,
     pub SecurityQualityOfService: PVOID,
 }
 
+pub type PCOBJECT_ATTRIBUTES = *const OBJECT_ATTRIBUTES;
+pub type POBJECT_ATTRIBUTES = *mut OBJECT_ATTRIBUTES;
+
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub union LARGE_INTEGER {
-    pub u: core::mem::ManuallyDrop<LARGE_INTEGER_STRUCT>,
+    pub u: LARGE_INTEGER_STRUCT,
     pub QuadPart: LONGLONG,
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct LARGE_INTEGER_STRUCT {
     pub LowPart: DWORD,
     pub HighPart: LONG,
 }
 
 pub type PLARGE_INTEGER = *mut LARGE_INTEGER;
+pub type PFILE_SEGMENT_ELEMENT = *mut core::ffi::c_void;
 
 #[repr(C)]
 pub union ULARGE_INTEGER {
@@ -612,6 +636,7 @@ pub const FILE_PIPE_CLIENT_END: ULONG = 0x00000000;
 pub const FILE_PIPE_SERVER_END: ULONG = 0x00000001;
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct PROCESSOR_NUMBER {
     pub Group: USHORT,
     pub Number: UCHAR,
@@ -650,3 +675,348 @@ pub const PROCESS_CREATE_FLAGS_CREATE_SESSION: ULONG = 0x00000080;
 pub const PROCESS_CREATE_FLAGS_INHERIT_FROM_PARENT: ULONG = 0x00000100;
 pub const PROCESS_CREATE_FLAGS_SUSPENDED: ULONG = 0x00000200;
 pub const PROCESS_CREATE_FLAGS_EXTENDED_UNKNOWN: ULONG = 0x00000400;
+
+pub const EXCEPTION_MAXIMUM_PARAMETERS: usize = 15;
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct EXCEPTION_RECORD {
+    pub ExceptionCode: DWORD,
+    pub ExceptionFlags: DWORD,
+    pub ExceptionRecord: *mut EXCEPTION_RECORD,
+    pub ExceptionAddress: PVOID,
+    pub NumberParameters: DWORD,
+    pub ExceptionInformation: [ULONG_PTR; EXCEPTION_MAXIMUM_PARAMETERS],
+}
+pub type PEXCEPTION_RECORD = *mut EXCEPTION_RECORD;
+
+#[repr(C)]
+pub struct EXCEPTION_RECORD32 {
+    pub ExceptionCode: DWORD,
+    pub ExceptionFlags: DWORD,
+    pub ExceptionRecord: DWORD,
+    pub ExceptionAddress: DWORD,
+    pub NumberParameters: DWORD,
+    pub ExceptionInformation: [DWORD; EXCEPTION_MAXIMUM_PARAMETERS],
+}
+pub type PEXCEPTION_RECORD32 = *mut EXCEPTION_RECORD32;
+
+#[repr(C)]
+pub struct EXCEPTION_RECORD64 {
+    pub ExceptionCode: DWORD,
+    pub ExceptionFlags: DWORD,
+    pub ExceptionRecord: DWORD64,
+    pub ExceptionAddress: DWORD64,
+    pub NumberParameters: DWORD,
+    pub __unusedAlignment: DWORD,
+    pub ExceptionInformation: [DWORD64; EXCEPTION_MAXIMUM_PARAMETERS],
+}
+pub type PEXCEPTION_RECORD64 = *mut EXCEPTION_RECORD64;
+
+#[repr(C)]
+pub struct EXCEPTION_POINTERS {
+    pub ExceptionRecord: PEXCEPTION_RECORD,
+    pub ContextRecord: PCONTEXT,
+}
+
+pub const SID_MAX_SUB_AUTHORITIES: usize = 15;
+pub const SECURITY_MAX_SID_SIZE: usize = core::mem::size_of::<SID>() - core::mem::size_of::<u32>() + (SID_MAX_SUB_AUTHORITIES * core::mem::size_of::<u32>());
+
+#[repr(C)]
+pub struct SID {
+    pub Revision: UCHAR,
+    pub SubAuthorityCount: UCHAR,
+    pub IdentifierAuthority: [UCHAR; 6],
+    pub SubAuthority: [ULONG; 1],
+}
+
+pub type PCSID = *const SID;
+pub type PISID = *mut SID;
+
+pub type RTL_ATOM = USHORT;
+pub type PRTL_ATOM = *mut RTL_ATOM;
+
+#[repr(u32)]
+pub enum EVENT_TYPE {
+    NotificationEvent,
+    SynchronizationEvent,
+}
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum POWER_ACTION {
+    PowerActionNone = 0,
+    PowerActionReserved = 1,
+    PowerActionSleep = 2,
+    PowerActionHibernate = 3,
+    PowerActionShutdown = 4,
+    PowerActionShutdownReset = 5,
+    PowerActionShutdownOff = 6,
+    PowerActionWarmEject = 7,
+    PowerActionDisplayOff = 8,
+}
+pub type PPOWER_ACTION = *mut POWER_ACTION;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DEVICE_POWER_STATE {
+    PowerDeviceUnspecified = 0,
+    PowerDeviceD0 = 1,
+    PowerDeviceD1 = 2,
+    PowerDeviceD2 = 3,
+    PowerDeviceD3 = 4,
+    PowerDeviceMaximum = 5,
+}
+pub type PDEVICE_POWER_STATE = *mut DEVICE_POWER_STATE;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MONITOR_DISPLAY_STATE {
+    PowerMonitorOff = 0,
+    PowerMonitorOn = 1,
+    PowerMonitorDim = 2,
+}
+pub type PMONITOR_DISPLAY_STATE = *mut MONITOR_DISPLAY_STATE;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum USER_ACTIVITY_PRESENCE {
+    PowerUserPresent = 0,
+    PowerUserNotPresent = 1,
+    PowerUserInactive = 2,
+    PowerUserMaximum = 3,
+    // PowerUserInvalid = 3,
+}
+pub type PUSER_ACTIVITY_PRESENCE = *mut USER_ACTIVITY_PRESENCE;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ENERGY_SAVER_STATUS {
+    ENERGY_SAVER_OFF = 0,
+    ENERGY_SAVER_STANDARD = 1,
+    ENERGY_SAVER_HIGH_SAVINGS = 2,
+}
+pub type PENERGY_SAVER_STATUS = *mut ENERGY_SAVER_STATUS;
+
+pub const ES_SYSTEM_REQUIRED: u32 = 0x00000001;
+pub const ES_DISPLAY_REQUIRED: u32 = 0x00000002;
+pub const ES_USER_PRESENT: u32 = 0x00000004;
+pub const ES_AWAYMODE_REQUIRED: u32 = 0x00000040;
+pub const ES_CONTINUOUS: u32 = 0x80000000;
+
+pub type EXECUTION_STATE = u32;
+pub type PEXECUTION_STATE = *mut EXECUTION_STATE;
+
+#[repr(i32)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum LATENCY_TIME {
+    LT_DONT_CARE = 0,
+    LT_LOWEST_LATENCY = 1,
+}
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PORT_INFORMATION_CLASS {
+    PortBasicInformation = 0,
+    PortDumpInformation = 1,
+}
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JOBOBJECTINFOCLASS {
+    JobObjectBasicAccountingInformation = 1,
+    JobObjectBasicLimitInformation = 2,
+    JobObjectBasicProcessIdList = 3,
+    JobObjectBasicUIRestrictions = 4,
+    JobObjectSecurityLimitInformation = 5,
+    JobObjectEndOfJobTimeInformation = 6,
+    JobObjectAssociateCompletionPortInformation = 7,
+    JobObjectBasicAndIoAccountingInformation = 8,
+    JobObjectExtendedLimitInformation = 9,
+    JobObjectJobSetInformation = 10,
+    JobObjectGroupInformation = 11,
+    JobObjectNotificationLimitInformation = 12,
+    JobObjectLimitViolationInformation = 13,
+    JobObjectGroupInformationEx = 14,
+    JobObjectCpuRateControlInformation = 15,
+    JobObjectCompletionFilter = 16,
+    JobObjectCompletionCounter = 17,
+    JobObjectReserved1Information = 18,
+    JobObjectReserved2Information = 19,
+    JobObjectReserved3Information = 20,
+    JobObjectReserved4Information = 21,
+    JobObjectReserved5Information = 22,
+    JobObjectReserved6Information = 23,
+    JobObjectReserved7Information = 24,
+    JobObjectReserved8Information = 25,
+    JobObjectReserved9Information = 26,
+    JobObjectReserved10Information = 27,
+    JobObjectReserved11Information = 28,
+    JobObjectReserved12Information = 29,
+    JobObjectReserved13Information = 30,
+    JobObjectReserved14Information = 31,
+    JobObjectNetRateControlInformation = 32,
+    JobObjectNotificationLimitInformation2 = 33,
+    JobObjectLimitViolationInformation2 = 34,
+    JobObjectCreateSilo = 35,
+    JobObjectSiloBasicInformation = 36,
+    JobObjectReserved15Information = 37,
+    JobObjectReserved16Information = 38,
+    JobObjectReserved17Information = 39,
+    JobObjectReserved18Information = 40,
+    JobObjectReserved19Information = 41,
+    JobObjectReserved20Information = 42,
+    JobObjectReserved21Information = 43,
+    JobObjectReserved22Information = 44,
+    JobObjectReserved23Information = 45,
+    JobObjectReserved24Information = 46,
+    JobObjectReserved25Information = 47,
+    JobObjectReserved26Information = 48,
+    JobObjectReserved27Information = 49,
+    JobObjectReserved28Information = 50,
+    JobObjectNetworkAccountingInformation = 51,
+    MaxJobObjectInfoClass = 52,
+}
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TIMER_TYPE {
+    NotificationTimer = 0,
+    SynchronizationTimer = 1,
+}
+
+pub type SE_SIGNING_LEVEL = u8;
+pub type PSE_SIGNING_LEVEL = *mut u8;
+
+pub const SE_SIGNING_LEVEL_UNCHECKED: u8 = 0x00;
+pub const SE_SIGNING_LEVEL_UNSIGNED: u8 = 0x01;
+pub const SE_SIGNING_LEVEL_ENTERPRISE: u8 = 0x02;
+pub const SE_SIGNING_LEVEL_CUSTOM_1: u8 = 0x03;
+pub const SE_SIGNING_LEVEL_DEVELOPER: u8 = 0x03;
+pub const SE_SIGNING_LEVEL_AUTHENTICODE: u8 = 0x04;
+pub const SE_SIGNING_LEVEL_CUSTOM_2: u8 = 0x05;
+pub const SE_SIGNING_LEVEL_STORE: u8 = 0x06;
+pub const SE_SIGNING_LEVEL_CUSTOM_3: u8 = 0x07;
+pub const SE_SIGNING_LEVEL_ANTIMALWARE: u8 = 0x07;
+pub const SE_SIGNING_LEVEL_MICROSOFT: u8 = 0x08;
+pub const SE_SIGNING_LEVEL_CUSTOM_4: u8 = 0x09;
+pub const SE_SIGNING_LEVEL_CUSTOM_5: u8 = 0x0A;
+pub const SE_SIGNING_LEVEL_DYNAMIC_CODEGEN: u8 = 0x0B;
+pub const SE_SIGNING_LEVEL_WINDOWS: u8 = 0x0C;
+pub const SE_SIGNING_LEVEL_CUSTOM_7: u8 = 0x0D;
+pub const SE_SIGNING_LEVEL_WINDOWS_TCB: u8 = 0x0E;
+pub const SE_SIGNING_LEVEL_CUSTOM_6: u8 = 0x0F;
+
+pub type WNF_CHANGE_STAMP = ULONG;
+pub type PWNF_CHANGE_STAMP = *mut WNF_CHANGE_STAMP;
+
+#[repr(C)]
+pub struct WNF_TYPE_ID {
+    pub TypeId: GUID,
+}
+
+pub type PWNF_TYPE_ID = *mut WNF_TYPE_ID;
+pub type PCWNF_TYPE_ID = *const WNF_TYPE_ID;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SYSTEM_POWER_STATE {
+    PowerSystemUnspecified = 0,
+    PowerSystemWorking = 1,
+    PowerSystemSleeping1 = 2,
+    PowerSystemSleeping2 = 3,
+    PowerSystemSleeping3 = 4,
+    PowerSystemHibernate = 5,
+    PowerSystemShutdown = 6,
+    PowerSystemMaximum = 7,
+}
+pub type PSYSTEM_POWER_STATE = *mut SYSTEM_POWER_STATE;
+
+pub const POWER_SYSTEM_MAXIMUM: u32 = 7;
+
+pub type PT2_CANCEL_PARAMETERS = PVOID;
+pub type SECURITY_CONTEXT_TRACKING_MODE = BOOLEAN;
+pub type PSECURITY_CONTEXT_TRACKING_MODE = *mut SECURITY_CONTEXT_TRACKING_MODE;
+
+#[repr(C)]
+pub struct SECURITY_QUALITY_OF_SERVICE {
+    pub Length: DWORD,
+    pub ImpersonationLevel: SECURITY_IMPERSONATION_LEVEL,
+    pub ContextTrackingMode: SECURITY_CONTEXT_TRACKING_MODE,
+    pub EffectiveOnly: BOOLEAN,
+}
+pub type PSECURITY_QUALITY_OF_SERVICE = *mut SECURITY_QUALITY_OF_SERVICE;
+
+#[repr(C)]
+pub struct SE_IMPERSONATION_STATE {
+    pub Token: PACCESS_TOKEN,
+    pub CopyOnOpen: BOOLEAN,
+    pub EffectiveOnly: BOOLEAN,
+    pub Level: SECURITY_IMPERSONATION_LEVEL,
+}
+pub type PSE_IMPERSONATION_STATE = *mut SE_IMPERSONATION_STATE;
+
+#[repr(C)]
+pub struct RTL_SRWLOCK {
+    pub Ptr: PVOID,
+}
+pub type PRTL_SRWLOCK = *mut RTL_SRWLOCK;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AUDIT_EVENT_TYPE {
+    AuditEventObjectAccess = 0,
+    AuditEventDirectoryServiceAccess = 1,
+}
+pub type PAUDIT_EVENT_TYPE = *mut AUDIT_EVENT_TYPE;
+
+#[repr(C)]
+pub struct JOB_SET_ARRAY {
+    pub JobHandle: HANDLE,
+    pub MemberLevel: DWORD,
+    pub Flags: DWORD,
+}
+pub type PJOB_SET_ARRAY = *mut JOB_SET_ARRAY;
+
+#[repr(C)]
+pub struct KTMOBJECT_CURSOR {
+    pub LastQuery: GUID,
+    pub ObjectIdCount: DWORD,
+    pub ObjectIds: [GUID; 1],
+}
+pub type PKTMOBJECT_CURSOR = *mut KTMOBJECT_CURSOR;
+
+pub type NOTIFICATION_MASK = ULONG;
+
+pub const TRANSACTION_NOTIFY_MASK: ULONG = 0x3FFFFFFF;
+pub const TRANSACTION_NOTIFY_PREPREPARE: ULONG = 0x00000001;
+pub const TRANSACTION_NOTIFY_PREPARE: ULONG = 0x00000002;
+pub const TRANSACTION_NOTIFY_COMMIT: ULONG = 0x00000004;
+pub const TRANSACTION_NOTIFY_ROLLBACK: ULONG = 0x00000008;
+pub const TRANSACTION_NOTIFY_PREPREPARE_COMPLETE: ULONG = 0x00000010;
+pub const TRANSACTION_NOTIFY_PREPARE_COMPLETE: ULONG = 0x00000020;
+pub const TRANSACTION_NOTIFY_COMMIT_COMPLETE: ULONG = 0x00000040;
+pub const TRANSACTION_NOTIFY_ROLLBACK_COMPLETE: ULONG = 0x00000080;
+pub const TRANSACTION_NOTIFY_RECOVER: ULONG = 0x00000100;
+pub const TRANSACTION_NOTIFY_SINGLE_PHASE_COMMIT: ULONG = 0x00000200;
+pub const TRANSACTION_NOTIFY_DELEGATE_COMMIT: ULONG = 0x00000400;
+pub const TRANSACTION_NOTIFY_RECOVER_QUERY: ULONG = 0x00000800;
+pub const TRANSACTION_NOTIFY_ENLIST_PREPREPARE: ULONG = 0x00001000;
+pub const TRANSACTION_NOTIFY_LAST_RECOVER: ULONG = 0x00002000;
+pub const TRANSACTION_NOTIFY_INDOUBT: ULONG = 0x00004000;
+pub const TRANSACTION_NOTIFY_PROPAGATE_PULL: ULONG = 0x00008000;
+pub const TRANSACTION_NOTIFY_PROPAGATE_PUSH: ULONG = 0x00010000;
+pub const TRANSACTION_NOTIFY_MARSHAL: ULONG = 0x00020000;
+pub const TRANSACTION_NOTIFY_ENLIST_MASK: ULONG = 0x00040000;
+pub const TRANSACTION_NOTIFY_RM_DISCONNECTED: ULONG = 0x01000000;
+pub const TRANSACTION_NOTIFY_TM_ONLINE: ULONG = 0x02000000;
+pub const TRANSACTION_NOTIFY_COMMIT_REQUEST: ULONG = 0x04000000;
+pub const TRANSACTION_NOTIFY_PROMOTE: ULONG = 0x08000000;
+pub const TRANSACTION_NOTIFY_PROMOTE_NEW: ULONG = 0x10000000;
+pub const TRANSACTION_NOTIFY_REQUEST_OUTCOME: ULONG = 0x20000000;
+
+pub const CONTEXT_AMD64: u32 = 0x00100000;
+pub const CONTEXT_CONTROL: u32 = CONTEXT_AMD64 | 0x00000001;
+pub const CONTEXT_INTEGER: u32 = CONTEXT_AMD64 | 0x00000002;
+pub const CONTEXT_SEGMENTS: u32 = CONTEXT_AMD64 | 0x00000004;
+pub const CONTEXT_FULL: u32 = CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_SEGMENTS;

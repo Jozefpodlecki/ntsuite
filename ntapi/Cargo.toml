@@ -7,10 +7,21 @@ rust-version = "1.95"
 license = "MIT"
 repository = "https://github.com/Jozefpodlecki/ntsuite"
 
+[dev-dependencies]
+tools = { path = "../tools" }
+widestring = "1.2"
+
 [features]
 default = ["full"]
-full = ["ntobapi", "ntkeapi", "ntgdi", "ntafd", "ntbcd", "ntd3dkmt", "ntdbg", "ntexapi", "ntimage", "ntintsafe", "ntioapi", "ntldr", "ntlpcapi", "ntmisc", "ntmmapi", "ntnls", "ntpebteb", "ntpfapi", "ntpnpapi", "ntpoapi", "ntpsapi", "ntregapi", "ntrtl", "ntsam", "ntseapi", "ntzwapi", "ntxcapi", "ntwow64", "winsta", "smbios", "subprocesstag", "ntstrsafe", "ntsxs", "nttp", "nttmapi", "nttypesafe", "ntuser", "ntwmi", "phnt_ntdef", "phnt_windows", "phnt", "usermgr"]
+full = [
+    "ntobapi", "ntkeapi", "ntgdi", "ntafd", "ntbcd", "ntd3dkmt", "ntdbg", "ntexapi", "ntimage",
+    "ntintsafe", "ntioapi", "ntldr", "ntlpcapi", "ntmisc", "ntmmapi", "ntnls", "ntpebteb", "ntpfapi",
+    "ntpnpapi", "ntpoapi", "ntpsapi", "ntregapi", "ntrtl", "ntsam", "ntseapi", "ntzwapi", "ntxcapi",
+    "ntwow64", "winsta", "smbios", "subprocesstag", "ntstrsafe", "ntsxs", "nttp", "nttmapi",
+    "nttypesafe", "ntuser", "ntwmi", "phnt_ntdef", "phnt_windows", "phnt", "usermgr", "evntrace"
+]
 
+evntrace = []
 ntobapi = []
 ntkeapi = []
 ntgdi = []

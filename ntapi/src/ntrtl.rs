@@ -4,6 +4,7 @@ use core::ptr;
 use crate::ntdef::*;
 use crate::ntioapi::FILE_INFORMATION_CLASS;
 use crate::ntpebteb::*;
+use crate::ntpsapi::PINITIAL_TEB;
 
 pub const RTL_IMAGE_MAX_DOS_HEADER: ULONG = 256 * 1024 * 1024;
 
@@ -324,8 +325,6 @@ pub struct RTL_CRITICAL_SECTION {
 
 pub type PRTL_CRITICAL_SECTION = *mut RTL_CRITICAL_SECTION;
 
-pub type PRTL_SRWLOCK = *mut ULONG_PTR;
-
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct RTL_CONDITION_VARIABLE {
@@ -513,7 +512,7 @@ pub struct RTL_BITMAP_RUN {
 pub type PRTL_BITMAP_RUN = *mut RTL_BITMAP_RUN;
 
 pub type PFILE_INFORMATION_CLASS = *mut FILE_INFORMATION_CLASS;
-pub type PSECURITY_DESCRIPTOR = PVOID;
+// pub type PSECURITY_DESCRIPTOR = PVOID;
 pub type PACL = PVOID;
 pub type PACCESS_MASK = *mut ACCESS_MASK;
 pub type PGENERIC_MAPPING = *mut GENERIC_MAPPING;
@@ -1339,26 +1338,6 @@ unsafe extern "system" {
 pub type PUSER_THREAD_START_ROUTINE = Option<unsafe extern "system" fn(ThreadParameter: PVOID) -> NTSTATUS>;
 pub type PVECTORED_EXCEPTION_HANDLER = Option<unsafe extern "system" fn(ExceptionInfo: *mut EXCEPTION_POINTERS) -> LONG>;
 
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct EXCEPTION_POINTERS {
-    pub ExceptionRecord: *mut EXCEPTION_RECORD,
-    pub ContextRecord: PCONTEXT,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct EXCEPTION_RECORD {
-    pub ExceptionCode: NTSTATUS,
-    pub ExceptionFlags: ULONG,
-    pub ExceptionRecord: *mut EXCEPTION_RECORD,
-    pub ExceptionAddress: PVOID,
-    pub NumberParameters: ULONG,
-    pub ExceptionInformation: [ULONG_PTR; EXCEPTION_MAXIMUM_PARAMETERS],
-}
-
-pub const EXCEPTION_MAXIMUM_PARAMETERS: usize = 15;
-
 pub type PRTL_RUN_ONCE = *mut RTL_RUN_ONCE;
 pub type PRTL_RUN_ONCE_INIT_FN = Option<unsafe extern "system" fn(RunOnce: PRTL_RUN_ONCE, Parameter: PVOID, Context: *mut PVOID) -> LOGICAL>;
 
@@ -1847,27 +1826,13 @@ unsafe extern "system" {
 pub type PRTL_TIMER_CALLBACK = Option<unsafe extern "system" fn(Parameter: PVOID, TimerOrWaitFired: BOOLEAN)>;
 pub type PWAIT_CALLBACK_ROUTINE = Option<unsafe extern "system" fn(Parameter: PVOID, TimerOrWaitFired: BOOLEAN)>;
 pub type PRTL_WORK_CALLBACK = Option<unsafe extern "system" fn(ThreadParameter: PVOID)>;
-pub type PINITIAL_TEB = *mut INITIAL_TEB;
+
 pub type POBJECT_BOUNDARY_DESCRIPTOR = PVOID;
 
-#[repr(C)]
-pub struct SID {
-    pub Revision: BYTE,
-    pub SubAuthorityCount: BYTE,
-    pub IdentifierAuthority: SID_IDENTIFIER_AUTHORITY,
-    pub SubAuthority: [DWORD; 1],
-}
-
-pub type PCSID = *const SID;
-pub type PISID = *mut SID;
-pub type PSID = *mut SID;
 pub type PNT_PRODUCT_TYPE = *mut NT_PRODUCT_TYPE;
 
 pub type WNF_STATE_NAME = ULONG64;
-pub type WNF_CHANGE_STAMP = ULONG64;
-pub type PWNF_CHANGE_STAMP = *mut WNF_CHANGE_STAMP;
 pub type PWNF_TYPE_ID = *mut WNF_TYPE_ID;
-pub type PCWNF_TYPE_ID = *const WNF_TYPE_ID;
 pub type PWNF_USER_CALLBACK = Option<unsafe extern "system" fn(
     StateName: WNF_STATE_NAME,
     ChangeStamp: WNF_CHANGE_STAMP,
@@ -1881,16 +1846,6 @@ pub type PWNF_USER_CALLBACK = Option<unsafe extern "system" fn(
 #[derive(Copy, Clone)]
 pub struct WNF_TYPE_ID {
     pub TypeId: GUID,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct INITIAL_TEB {
-    pub OldStackBase: PVOID,
-    pub OldStackLimit: PVOID,
-    pub StackBase: PVOID,
-    pub StackLimit: PVOID,
-    pub StackAllocationBase: PVOID,
 }
 
 pub type NT_PRODUCT_TYPE = ULONG;

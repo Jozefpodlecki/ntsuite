@@ -117,6 +117,33 @@ pub type PKTHREAD_STATE = *mut KTHREAD_STATE;
 pub type PKHETERO_CPU_POLICY = *mut KHETERO_CPU_POLICY;
 pub type PKWAIT_REASON = *mut KWAIT_REASON;
 
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IO_SESSION_EVENT {
+    IoSessionEventIgnore = 0,
+    IoSessionEventCreated = 1,
+    IoSessionEventTerminated = 2,
+    IoSessionEventConnected = 3,
+    IoSessionEventDisconnected = 4,
+    IoSessionEventLogon = 5,
+    IoSessionEventLogoff = 6,
+    IoSessionEventMax = 7,
+}
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IO_SESSION_STATE {
+    IoSessionStateCreated = 1,
+    IoSessionStateInitialized = 2,
+    IoSessionStateConnected = 3,
+    IoSessionStateDisconnected = 4,
+    IoSessionStateDisconnectedLoggedOn = 5,
+    IoSessionStateLoggedOn = 6,
+    IoSessionStateLoggedOff = 7,
+    IoSessionStateTerminated = 8,
+    IoSessionStateMax = 9,
+}
+
 unsafe extern "system" {
     pub fn NtCallbackReturn(
         OutputBuffer: *const c_void,
