@@ -1,4 +1,5 @@
-use ntapi::{ntdef::*, ntexapi::*, ntioapi::*, ntmmapi::*, ntrtl::POBJECT_TYPE_LIST, ntseapi::*, nttmapi::*};
+use ntapi::{ntdef::*, ntdbg::*, ntobapi::*, ntexapi::*, ntioapi::*, ntkeapi::*, ntmmapi::*, ntseapi::*, ntregapi::*, ntpsapi::*, ntpoapi::*, ntlpcapi::*, ntrtl::*, nttmapi::*};
+
 #[unsafe(naked)]
 pub fn NtQueryFullAttributesFile(
 	ObjectAttributes: POBJECT_ATTRIBUTES, 
@@ -235,8 +236,9 @@ pub fn NtAccessCheckByTypeResultListAndAuditAlarm(
 
 #[unsafe(naked)]
 pub fn ZwAcquireProcessActivityReference(
-	ProcessHandle: HANDLE, 
-	Reference: PREFERENCE_LIST) -> NTSTATUS {
+	ActivityReferenceHandle: PHANDLE, 
+	ParentProcessHandle: HANDLE, 
+	ProcessActivityType: ULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 104",
@@ -352,12 +354,12 @@ pub fn NtOpenJobObject(
 #[unsafe(naked)]
 pub fn ZwGetNotificationResourceManager(
 	ResourceManagerHandle: HANDLE, 
-	TransactionNotification: PVOID, 
+	TransactionNotification: PTRANSACTION_NOTIFICATION, 
 	NotificationLength: ULONG, 
 	Timeout: PLARGE_INTEGER, 
-	ReturnLength: BOOLEAN, 
 	ReturnLength: PULONG, 
-	Asynchronous: BOOLEAN) -> NTSTATUS {
+	Asynchronous: ULONG, 
+	AsynchronousContext: ULONG_PTR) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 259",
@@ -852,7 +854,7 @@ pub fn ZwSaveKeyEx(
 
 #[unsafe(naked)]
 pub fn NtDeleteDriverEntry(
-	DriverEntry: PDRIVER_ENTRY) -> NTSTATUS {
+	DriverEntry: ULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 218",
@@ -1102,7 +1104,7 @@ pub fn NtCreateThread(
 	ProcessHandle: HANDLE, 
 	ClientId: PCLIENT_ID, 
 	ThreadContext: PCONTEXT, 
-	InitialTeb: PUSER_STACK, 
+	InitialTeb: PINITIAL_TEB, 
 	CreateSuspended: BOOLEAN) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
@@ -1615,7 +1617,7 @@ pub fn NtQueryInformationThread(
 #[unsafe(naked)]
 pub fn NtAlpcSetInformation(
 	AlpcHandle: HANDLE, 
-	AlpcInformationClass: ALPC_INFO_CLASS, 
+	AlpcInformationClass: ALPC_PORT_INFORMATION_CLASS, 
 	AlpcInformation: PVOID, 
 	AlpcInformationLength: ULONG) -> NTSTATUS {
     core::arch::naked_asm!(
@@ -1826,7 +1828,7 @@ pub fn NtSetSystemInformation(
 pub fn ZwAlpcCreateSectionView(
 	PortHandle: HANDLE, 
 	Flags: ULONG, 
-	SectionView: PALPC_SECTION_VIEW) -> NTSTATUS {
+	SectionView: PALPC_DATA_VIEW_ATTR) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 128",
@@ -2602,8 +2604,9 @@ pub fn ZwCreateCpuPartition(
 
 #[unsafe(naked)]
 pub fn NtAcquireProcessActivityReference(
-	ProcessHandle: HANDLE, 
-	Reference: PREFERENCE_LIST) -> NTSTATUS {
+	ActivityReferenceHandle: PHANDLE, 
+	ParentProcessHandle: HANDLE, 
+	ProcessActivityType: ULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 104",
@@ -3051,9 +3054,9 @@ pub fn NtGetNotificationResourceManager(
 	TransactionNotification: PVOID, 
 	NotificationLength: ULONG, 
 	Timeout: PLARGE_INTEGER, 
-	ReturnLength: BOOLEAN, 
 	ReturnLength: PULONG, 
-	Asynchronous: BOOLEAN) -> NTSTATUS {
+	Asynchronous: ULONG, 
+	AsynchronousContext: ULONG_PTR) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 259",
@@ -3372,7 +3375,8 @@ pub fn NtSetSystemEnvironmentValue(
 
 #[unsafe(naked)]
 pub fn NtAddDriverEntry(
-	DriverEntry: PDRIVER_ENTRY) -> NTSTATUS {
+	DriverEntry: PEFI_DRIVER_ENTRY, 
+	Id: PULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 107",
@@ -3803,7 +3807,8 @@ pub fn NtOpenResourceManager(
 
 #[unsafe(naked)]
 pub fn NtQueryIoRingCapabilities(
-	Capabilities: PIORING_CAPABILITIES) -> NTSTATUS {
+	IoRingCapabilitiesLength: SIZE_T, 
+	IoRingCapabilities: PVOID) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 351",
@@ -5545,8 +5550,8 @@ pub fn NtRaiseHardError(
 	NumberOfParameters: ULONG, 
 	UnicodeStringParameterMask: ULONG, 
 	Parameters: PULONG_PTR, 
-	ResponseOption: HARDERROR_RESPONSE_OPTION, 
-	Response: PHARDERROR_RESPONSE) -> NTSTATUS {
+	ResponseOption: ULONG, 
+	Response: PULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 373",
@@ -6190,8 +6195,8 @@ pub fn NtCreateEnclave(
 	Size: SIZE_T, 
 	EnclaveType: ULONG, 
 	EnclaveInformation: PVOID, 
-	InformationLength: ULONG, 
-	EnclaveInformation: PULONG) -> NTSTATUS {
+	EnclaveInformationLength: ULONG, 
+	EnclaveError: PULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 174",
@@ -6400,7 +6405,7 @@ pub fn NtUnlockVirtualMemory(
 
 #[unsafe(naked)]
 pub fn ZwModifyDriverEntry(
-	DriverEntry: PDRIVER_ENTRY) -> NTSTATUS {
+	DriverEntry: PEFI_DRIVER_ENTRY) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 288",
@@ -7495,7 +7500,7 @@ pub fn NtAlpcQueryInformation(
 
 #[unsafe(naked)]
 pub fn NtModifyDriverEntry(
-	DriverEntry: PDRIVER_ENTRY) -> NTSTATUS {
+	DriverEntry: PEFI_DRIVER_ENTRY) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 288",
@@ -8409,8 +8414,7 @@ pub fn NtSetValueKey(
 pub fn NtAlpcCreateSecurityContext(
 	PortHandle: HANDLE, 
 	Flags: ULONG, 
-	SecurityAttributes: PALPC_SECURITY_ATTRIBUTES, 
-	Context: PVOID) -> NTSTATUS {
+	SecurityAttribute: PALPC_SECURITY_ATTR) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 129",
@@ -8475,7 +8479,7 @@ pub fn ZwOpenSymbolicLinkObject(
 
 #[unsafe(naked)]
 pub fn ZwDeleteDriverEntry(
-	DriverEntry: PDRIVER_ENTRY) -> NTSTATUS {
+	DriverEntry: ULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 218",
@@ -8770,7 +8774,8 @@ pub fn ZwDeleteObjectAuditAlarm(
 
 #[unsafe(naked)]
 pub fn ZwAddDriverEntry(
-	DriverEntry: PDRIVER_ENTRY) -> NTSTATUS {
+	DriverEntry: PEFI_DRIVER_ENTRY, 
+	Id: PULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 107",
@@ -9317,8 +9322,8 @@ pub fn ZwRaiseHardError(
 	NumberOfParameters: ULONG, 
 	UnicodeStringParameterMask: ULONG, 
 	Parameters: PULONG_PTR, 
-	ResponseOption: HARDERROR_RESPONSE_OPTION, 
-	Response: PHARDERROR_RESPONSE) -> NTSTATUS {
+	ResponseOption: ULONG, 
+	Response: PULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 373",
@@ -9588,7 +9593,14 @@ pub fn ZwFilterTokenEx(
 	SidsToDisable: PTOKEN_GROUPS, 
 	PrivilegesToDelete: PTOKEN_PRIVILEGES, 
 	RestrictedSids: PTOKEN_GROUPS, 
-	SidsToDisable: PTOKEN_GROUPS, 
+	DisableUserClaimsCount: ULONG, 
+	UserClaimsToDisable: PCUNICODE_STRING, 
+	DisableDeviceClaimsCount: ULONG, 
+	DeviceClaimsToDisable: PCUNICODE_STRING, 
+	DeviceGroupsToDisable: PTOKEN_GROUPS, 
+	RestrictedUserAttributes: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION, 
+	RestrictedDeviceAttributes: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION, 
+	RestrictedDeviceGroups: PTOKEN_GROUPS, 
 	NewTokenHandle: PHANDLE) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
@@ -10480,13 +10492,14 @@ pub fn ZwOpenSemaphore(
 #[unsafe(naked)]
 pub fn ZwCreateEnclave(
 	ProcessHandle: HANDLE, 
-	BaseAddress: PVOID, 
-	ZeroBits: SIZE_T, 
+	BaseAddress: *mut PVOID, 
+	ZeroBits: ULONG_PTR, 
 	Size: SIZE_T, 
+	InitialCommitment: SIZE_T, 
 	EnclaveType: ULONG, 
 	EnclaveInformation: PVOID, 
-	InformationLength: ULONG, 
-	EnclaveInformation: PULONG) -> NTSTATUS {
+	EnclaveInformationLength: ULONG, 
+	EnclaveError: PULONG) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 174",
@@ -10721,8 +10734,7 @@ pub fn ZwReplyWaitReplyPort(
 pub fn ZwAlpcCreateSecurityContext(
 	PortHandle: HANDLE, 
 	Flags: ULONG, 
-	SecurityAttributes: PALPC_SECURITY_ATTRIBUTES, 
-	Context: PVOID) -> NTSTATUS {
+	SecurityAttribute: PALPC_SECURITY_ATTR) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 129",
@@ -11160,7 +11172,7 @@ pub fn ZwAllocateUuids(
 pub fn NtAlpcCreateSectionView(
 	PortHandle: HANDLE, 
 	Flags: ULONG, 
-	SectionView: PALPC_SECTION_VIEW) -> NTSTATUS {
+	SectionView: PALPC_DATA_VIEW_ATTR) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 128",
@@ -11698,7 +11710,14 @@ pub fn NtFilterTokenEx(
 	SidsToDisable: PTOKEN_GROUPS, 
 	PrivilegesToDelete: PTOKEN_PRIVILEGES, 
 	RestrictedSids: PTOKEN_GROUPS, 
-	SidsToDisable: PTOKEN_GROUPS, 
+	DisableUserClaimsCount: ULONG, 
+	UserClaimsToDisable: PCUNICODE_STRING, 
+	DisableDeviceClaimsCount: ULONG, 
+	DeviceClaimsToDisable: PCUNICODE_STRING, 
+	DeviceGroupsToDisable: PTOKEN_GROUPS, 
+	RestrictedUserAttributes: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION, 
+	RestrictedDeviceAttributes: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION, 
+	RestrictedDeviceGroups: PTOKEN_GROUPS, 
 	NewTokenHandle: PHANDLE) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
@@ -11934,7 +11953,7 @@ pub fn ZwCreateThread(
 	ProcessHandle: HANDLE, 
 	ClientId: PCLIENT_ID, 
 	ThreadContext: PCONTEXT, 
-	InitialTeb: PUSER_STACK, 
+	InitialTeb: PINITIAL_TEB, 
 	CreateSuspended: BOOLEAN) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
@@ -12657,7 +12676,8 @@ pub fn NtSetInformationEnlistment(
 
 #[unsafe(naked)]
 pub fn ZwQueryIoRingCapabilities(
-	Capabilities: PIORING_CAPABILITIES) -> NTSTATUS {
+	IoRingCapabilitiesLength: SIZE_T, 
+	IoRingCapabilities: PVOID) -> NTSTATUS {
     core::arch::naked_asm!(
             "mov r10, rcx",
             "mov eax, 351",

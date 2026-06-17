@@ -5,6 +5,10 @@ use core::{ffi::c_void, mem::ManuallyDrop};
 
 use crate::ntseapi::SECURITY_IMPERSONATION_LEVEL;
 
+pub const STD_INPUT_HANDLE: u32 = 0xFFFFFFF6;
+pub const STD_OUTPUT_HANDLE: u32 = 0xFFFFFFF5;
+pub const STD_ERROR_HANDLE: u32 = 0xFFFFFFF4;
+
 #[repr(C, align(16))]
 pub struct CONTEXT {
     pub P1Home: DWORD64,
@@ -446,6 +450,21 @@ pub type PANSI_STRING = *mut STRING;
 pub type PUNICODE_STRING = *mut UNICODE_STRING;
 pub type PCUNICODE_STRING = *const UNICODE_STRING;
 pub type PCANSI_STRING = PSTRING;
+
+pub const OBJ_PROTECT_CLOSE: u32 = 0x00000001;
+pub const OBJ_INHERIT: u32 = 0x00000002;
+pub const OBJ_AUDIT_OBJECT_CLOSE: u32 = 0x00000004;
+pub const OBJ_NO_RIGHTS_UPGRADE: u32 = 0x00000008;
+pub const OBJ_PERMANENT: u32 = 0x00000010;
+pub const OBJ_EXCLUSIVE: u32 = 0x00000020;
+pub const OBJ_CASE_INSENSITIVE: u32 = 0x00000040;
+pub const OBJ_OPENIF: u32 = 0x00000080;
+pub const OBJ_OPENLINK: u32 = 0x00000100;
+pub const OBJ_KERNEL_HANDLE: u32 = 0x00000200;
+pub const OBJ_FORCE_ACCESS_CHECK: u32 = 0x00000400;
+pub const OBJ_IGNORE_IMPERSONATED_DEVICEMAP: u32 = 0x00000800;
+pub const OBJ_DONT_REPARSE: u32 = 0x00001000;
+pub const OBJ_VALID_ATTRIBUTES: u32 = 0x00001FF2;
 
 #[repr(C)]
 pub struct OBJECT_ATTRIBUTES {
@@ -1020,3 +1039,108 @@ pub const CONTEXT_CONTROL: u32 = CONTEXT_AMD64 | 0x00000001;
 pub const CONTEXT_INTEGER: u32 = CONTEXT_AMD64 | 0x00000002;
 pub const CONTEXT_SEGMENTS: u32 = CONTEXT_AMD64 | 0x00000004;
 pub const CONTEXT_FULL: u32 = CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_SEGMENTS;
+
+pub type PKNORMAL_ROUTINE = Option<unsafe extern "system" fn(
+    NormalContext: PVOID,
+    SystemArgument1: PVOID,
+    SystemArgument2: PVOID,
+) -> ()>;
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct KTHREAD {
+    _data: [u8; 0],
+}
+pub type PKTHREAD = *mut KTHREAD;
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct LIST_ENTRY {
+    pub Flink: *mut LIST_ENTRY,
+    pub Blink: *mut LIST_ENTRY,
+}
+
+impl LIST_ENTRY {
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.Flink == self as *const _ as *mut LIST_ENTRY
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct KAPC {
+    pub Type: CSHORT,
+    pub Size: CSHORT,
+    pub Spare0: ULONG,
+    pub Thread: PKTHREAD,
+    pub ApcListEntry: LIST_ENTRY,
+    pub KernelRoutine: PKKERNEL_ROUTINE,
+    pub RundownRoutine: PKRUNDOWN_ROUTINE,
+    pub NormalRoutine: PKNORMAL_ROUTINE,
+    pub NormalContext: PVOID,
+    pub SystemArgument1: PVOID,
+    pub SystemArgument2: PVOID,
+    pub ApcStateIndex: CHAR,
+    pub ApcMode: CHAR,
+    pub Inserted: UCHAR,
+    pub Spare1: [UCHAR; 1],
+}
+
+pub type PKAPC = *mut KAPC;
+
+pub type PKKERNEL_ROUTINE = Option<unsafe extern "system" fn(
+    Apc: PKAPC,
+    NormalRoutine: *mut PKNORMAL_ROUTINE,
+    NormalContext: *mut PVOID,
+    SystemArgument1: *mut PVOID,
+    SystemArgument2: *mut PVOID,
+) -> ()>;
+
+pub type PKRUNDOWN_ROUTINE = Option<unsafe extern "system" fn(
+    Apc: PKAPC,
+) -> ()>;
+
+pub type PTOKEN_CLAIMS = *mut c_void;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ALPC_INFORMATION_CLASS {
+    AlpcBasicInformation = 0,
+    AlpcPortInformation = 1,
+    AlpcAssociateCompletionPortInformation = 2,
+    AlpcConnectedSIDInformation = 3,
+    AlpcServerInformation = 4,
+    AlpcMessageZoneInformation = 5,
+    AlpcRegisterCompletionListInformation = 6,
+    AlpcUnregisterCompletionListInformation = 7,
+    AlpcAdjustCompletionListConcurrencyCountInformation = 8,
+    AlpcRegisterCallbackInformation = 9,
+    AlpcCompletionListRundownInformation = 10,
+    AlpcWaitForPortReferences = 11,
+    AlpcServerSessionInformation = 12,
+    MaxAlpcInfoClass = 13,
+}
+pub type PALPC_INFORMATION_CLASS = *mut ALPC_INFORMATION_CLASS;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SYMBOLIC_LINK_INFORMATION_CLASS {
+    SymbolicLinkBasicInformation = 0,
+    SymbolicLinkTargetInformation = 1,
+    SymbolicLinkRenameInformation = 2,
+    MaxSymbolicLinkInfoClass = 3,
+}
+pub type PSYMBOLIC_LINK_INFORMATION_CLASS = *mut SYMBOLIC_LINK_INFORMATION_CLASS;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CPU_PARTITION_INFORMATION_CLASS {
+    CpuPartitionBasicInformation = 0,
+    CpuPartitionFlagsInformation = 1,
+    CpuPartitionProcessorInformation = 2,
+    CpuPartitionProcessorAffinityInformation = 3,
+    CpuPartitionProcessorPowerInformation = 4,
+    MaxCpuPartitionInfoClass = 5,
+}
+pub type PCPU_PARTITION_INFORMATION_CLASS = *mut CPU_PARTITION_INFORMATION_CLASS;

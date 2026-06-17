@@ -22,7 +22,7 @@ fn main() {
         
         let mut context: CONTEXT = mem::zeroed();
         context.ContextFlags = CONTEXT_FULL;
-        context.Rip = thread_entry as u64;
+        context.Rip = thread_entry as *const () as u64;
         context.Rcx = 0;
         
         let mut stack_base: PVOID = ptr::null_mut();
@@ -42,7 +42,8 @@ fn main() {
             return;
         }
         
-        context.Rsp = (stack_base as u64) + stack_size;
+        context.Rsp = (stack_base as u64) + stack_size - 8;
+        // context.Rsp = (stack_base as u64) + stack_size;
         
         let initial_teb: PINITIAL_TEB = ptr::null_mut();
         

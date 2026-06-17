@@ -8,3 +8,7 @@ license = "MIT"
 
 [dependencies]
 ntapi = { path = "../ntapi", features = ["ntmmapi"] }
+
+[features]
+default = []
+alloc = []

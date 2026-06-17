@@ -94,12 +94,6 @@ pub struct HEAP_ENTRY {
     pub Interceptor: ULONG,
 }
 
-#[repr(C)]
-pub struct LIST_ENTRY {
-    pub Flink: *mut LIST_ENTRY,
-    pub Blink: *mut LIST_ENTRY,
-}
-
 pub type PHEAP_SEGMENT = *mut HEAP_SEGMENT;
 pub type PHEAP_ENTRY = *mut HEAP_ENTRY;
 

@@ -515,8 +515,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("ULONG", "NumberOfParameters"),
             ("ULONG", "UnicodeStringParameterMask"),
             ("PULONG_PTR", "Parameters"),
-            ("HARDERROR_RESPONSE_OPTION", "ResponseOption"),
-            ("PHARDERROR_RESPONSE", "Response"),
+            ("ULONG", "ResponseOption"),
+            ("PULONG", "Response"),
         ],
     });
     
@@ -847,7 +847,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         return_type: "NTSTATUS",
         parameters: vec![
             ("HANDLE", "AlpcHandle"),
-            ("ALPC_INFO_CLASS", "AlpcInformationClass"),
+            ("ALPC_PORT_INFORMATION_CLASS", "AlpcInformationClass"),
             ("PVOID", "AlpcInformation"),
             ("ULONG", "AlpcInformationLength"),
         ],
@@ -859,7 +859,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         parameters: vec![
             ("HANDLE", "PortHandle"),
             ("ULONG", "Flags"),
-            ("PALPC_SECTION_VIEW", "SectionView"),
+            ("PALPC_DATA_VIEW_ATTR", "SectionView"),
         ],
     });
 
@@ -1422,9 +1422,9 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("PVOID", "TransactionNotification"),
             ("ULONG", "NotificationLength"),
             ("PLARGE_INTEGER", "Timeout"),
-            ("BOOLEAN", "ReturnLength"),
             ("PULONG", "ReturnLength"),
-            ("BOOLEAN", "Asynchronous"),
+            ("ULONG", "Asynchronous"),
+            ("ULONG_PTR", "AsynchronousContext"),
         ],
     });
 
@@ -1644,7 +1644,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "NtAddDriverEntry",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PDRIVER_ENTRY", "DriverEntry"),
+            ("PEFI_DRIVER_ENTRY", "DriverEntry"),
+            ("PULONG", "Id")
         ],
     });
 
@@ -1945,7 +1946,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "NtQueryIoRingCapabilities",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PIORING_CAPABILITIES", "Capabilities"),
+            ("SIZE_T", "IoRingCapabilitiesLength"),
+            ("PVOID", "IoRingCapabilities"),
         ],
     });
 
@@ -3719,8 +3721,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("SIZE_T", "Size"),
             ("ULONG", "EnclaveType"),
             ("PVOID", "EnclaveInformation"),
-            ("ULONG", "InformationLength"),
-            ("PULONG", "EnclaveInformation"),
+            ("ULONG", "EnclaveInformationLength"),
+            ("PULONG", "EnclaveError"),
         ],
     });
 
@@ -3846,7 +3848,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "ZwModifyDriverEntry",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PDRIVER_ENTRY", "DriverEntry"),
+            ("PEFI_DRIVER_ENTRY", "DriverEntry"),
         ],
     });
 
@@ -4664,7 +4666,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "NtModifyDriverEntry",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PDRIVER_ENTRY", "DriverEntry"),
+            ("PEFI_DRIVER_ENTRY", "DriverEntry"),
         ],
     });
 
@@ -5318,14 +5320,24 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         ],
     });
 
-    map.insert("NtAlpcCreateSecurityContext", FunctionSignature {
-        name: "NtAlpcCreateSecurityContext",
+    map.insert("ZwFilterTokenEx", FunctionSignature {
+        name: "ZwFilterTokenEx",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("HANDLE", "PortHandle"),
+            ("HANDLE", "ExistingTokenHandle"),
             ("ULONG", "Flags"),
-            ("PALPC_SECURITY_ATTRIBUTES", "SecurityAttributes"),
-            ("PVOID", "Context"),
+            ("PTOKEN_GROUPS", "SidsToDisable"),
+            ("PTOKEN_PRIVILEGES", "PrivilegesToDelete"),
+            ("PTOKEN_GROUPS", "RestrictedSids"),
+            ("ULONG", "DisableUserClaimsCount"),
+            ("PCUNICODE_STRING", "UserClaimsToDisable"),
+            ("ULONG", "DisableDeviceClaimsCount"),
+            ("PCUNICODE_STRING", "DeviceClaimsToDisable"),
+            ("PTOKEN_GROUPS", "DeviceGroupsToDisable"),
+            ("PTOKEN_SECURITY_ATTRIBUTES_INFORMATION", "RestrictedUserAttributes"),
+            ("PTOKEN_SECURITY_ATTRIBUTES_INFORMATION", "RestrictedDeviceAttributes"),
+            ("PTOKEN_GROUPS", "RestrictedDeviceGroups"),
+            ("PHANDLE", "NewTokenHandle"),
         ],
     });
 
@@ -5353,7 +5365,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "ZwDeleteDriverEntry",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PDRIVER_ENTRY", "DriverEntry"),
+            ("ULONG", "DriverEntry"),
         ],
     });
 
@@ -5571,7 +5583,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "ZwAddDriverEntry",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PDRIVER_ENTRY", "DriverEntry"),
+            ("PEFI_DRIVER_ENTRY", "DriverEntry"),
+            ("PULONG", "Id"),
         ],
     });
 
@@ -5988,8 +6001,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("ULONG", "NumberOfParameters"),
             ("ULONG", "UnicodeStringParameterMask"),
             ("PULONG_PTR", "Parameters"),
-            ("HARDERROR_RESPONSE_OPTION", "ResponseOption"),
-            ("PHARDERROR_RESPONSE", "Response"),
+            ("ULONG", "ResponseOption"),
+            ("PULONG", "Response"),
         ],
     });
 
@@ -6001,6 +6014,16 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("ACCESS_MASK", "DesiredAccess"),
             ("POBJECT_ATTRIBUTES", "ObjectAttributes"),
             ("TIMER_TYPE", "TimerType"),
+        ],
+    });
+
+    map.insert("NtAlpcCreateSecurityContext", FunctionSignature {
+        name: "NtAlpcCreateSecurityContext",
+        return_type: "NTSTATUS",
+        parameters: vec![
+            ("HANDLE", "PortHandle"),
+            ("ULONG", "Flags"),
+            ("PALPC_SECURITY_ATTR", "SecurityAttribute"),
         ],
     });
 
@@ -6160,20 +6183,6 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("TOKEN_INFORMATION_CLASS", "TokenInformationClass"),
             ("PVOID", "TokenInformation"),
             ("ULONG", "TokenInformationLength"),
-        ],
-    });
-
-    map.insert("ZwFilterTokenEx", FunctionSignature {
-        name: "ZwFilterTokenEx",
-        return_type: "NTSTATUS",
-        parameters: vec![
-            ("HANDLE", "ExistingTokenHandle"),
-            ("ULONG", "Flags"),
-            ("PTOKEN_GROUPS", "SidsToDisable"),
-            ("PTOKEN_PRIVILEGES", "PrivilegesToDelete"),
-            ("PTOKEN_GROUPS", "RestrictedSids"),
-            ("PTOKEN_GROUPS", "SidsToDisable"),
-            ("PHANDLE", "NewTokenHandle"),
         ],
     });
 
@@ -6869,13 +6878,14 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         return_type: "NTSTATUS",
         parameters: vec![
             ("HANDLE", "ProcessHandle"),
-            ("PVOID", "BaseAddress"),
-            ("SIZE_T", "ZeroBits"),
+            ("*mut PVOID", "BaseAddress"),
+            ("ULONG_PTR", "ZeroBits"),
             ("SIZE_T", "Size"),
+            ("SIZE_T", "InitialCommitment"),
             ("ULONG", "EnclaveType"),
             ("PVOID", "EnclaveInformation"),
-            ("ULONG", "InformationLength"),
-            ("PULONG", "EnclaveInformation"),
+            ("ULONG", "EnclaveInformationLength"),
+            ("PULONG", "EnclaveError"),
         ],
     });
 
@@ -7041,8 +7051,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         parameters: vec![
             ("HANDLE", "PortHandle"),
             ("ULONG", "Flags"),
-            ("PALPC_SECURITY_ATTRIBUTES", "SecurityAttributes"),
-            ("PVOID", "Context"),
+            ("PALPC_SECURITY_ATTR", "SecurityAttribute"),
         ],
     });
 
@@ -7372,7 +7381,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         parameters: vec![
             ("HANDLE", "PortHandle"),
             ("ULONG", "Flags"),
-            ("PALPC_SECTION_VIEW", "SectionView"),
+            ("PALPC_DATA_VIEW_ATTR", "SectionView"),
         ],
     });
 
@@ -7787,7 +7796,14 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("PTOKEN_GROUPS", "SidsToDisable"),
             ("PTOKEN_PRIVILEGES", "PrivilegesToDelete"),
             ("PTOKEN_GROUPS", "RestrictedSids"),
-            ("PTOKEN_GROUPS", "SidsToDisable"),
+            ("ULONG", "DisableUserClaimsCount"),
+            ("PCUNICODE_STRING", "UserClaimsToDisable"),
+            ("ULONG", "DisableDeviceClaimsCount"),
+            ("PCUNICODE_STRING", "DeviceClaimsToDisable"),
+            ("PTOKEN_GROUPS", "DeviceGroupsToDisable"),
+            ("PTOKEN_SECURITY_ATTRIBUTES_INFORMATION", "RestrictedUserAttributes"),
+            ("PTOKEN_SECURITY_ATTRIBUTES_INFORMATION", "RestrictedDeviceAttributes"),
+            ("PTOKEN_GROUPS", "RestrictedDeviceGroups"),
             ("PHANDLE", "NewTokenHandle"),
         ],
     });
@@ -7945,7 +7961,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("HANDLE", "ProcessHandle"),
             ("PCLIENT_ID", "ClientId"),
             ("PCONTEXT", "ThreadContext"),
-            ("PUSER_STACK", "InitialTeb"),
+            ("PINITIAL_TEB", "InitialTeb"),
             ("BOOLEAN", "CreateSuspended"),
         ],
     });
@@ -8467,7 +8483,8 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "ZwQueryIoRingCapabilities",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PIORING_CAPABILITIES", "Capabilities"),
+            ("SIZE_T", "IoRingCapabilitiesLength"),
+            ("PVOID", "IoRingCapabilities"),
         ],
     });
 
@@ -9362,8 +9379,9 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "ZwAcquireProcessActivityReference",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("HANDLE", "ProcessHandle"),
-            ("PREFERENCE_LIST", "Reference"),
+            ("PHANDLE", "ActivityReferenceHandle"),
+            ("HANDLE", "ParentProcessHandle"),
+            ("ULONG", "ProcessActivityType"),
         ],
     });
 
@@ -9443,12 +9461,12 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         return_type: "NTSTATUS",
         parameters: vec![
             ("HANDLE", "ResourceManagerHandle"),
-            ("PVOID", "TransactionNotification"),
+            ("PTRANSACTION_NOTIFICATION", "TransactionNotification"),
             ("ULONG", "NotificationLength"),
             ("PLARGE_INTEGER", "Timeout"),
-            ("BOOLEAN", "ReturnLength"),
             ("PULONG", "ReturnLength"),
-            ("BOOLEAN", "Asynchronous"),
+            ("ULONG", "Asynchronous"),
+            ("ULONG_PTR", "AsynchronousContext"),
         ],
     });
 
@@ -9758,7 +9776,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "NtDeleteDriverEntry",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("PDRIVER_ENTRY", "DriverEntry"),
+            ("ULONG", "DriverEntry"),
         ],
     });
 
@@ -9935,7 +9953,7 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
             ("HANDLE", "ProcessHandle"),
             ("PCLIENT_ID", "ClientId"),
             ("PCONTEXT", "ThreadContext"),
-            ("PUSER_STACK", "InitialTeb"),
+            ("PINITIAL_TEB", "InitialTeb"),
             ("BOOLEAN", "CreateSuspended"),
         ],
     });
@@ -10650,8 +10668,9 @@ pub static V10_0_26100_8521_SIGNATURES: LazyLock<HashMap<&'static str, FunctionS
         name: "NtAcquireProcessActivityReference",
         return_type: "NTSTATUS",
         parameters: vec![
-            ("HANDLE", "ProcessHandle"),
-            ("PREFERENCE_LIST", "Reference"),
+            ("PHANDLE", "ActivityReferenceHandle"),
+            ("HANDLE", "ParentProcessHandle"),
+            ("ULONG", "ProcessActivityType"),
         ],
     });
 

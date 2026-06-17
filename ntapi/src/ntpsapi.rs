@@ -438,6 +438,68 @@ pub union PS_ALERT_THREAD_EXTENDED_PARAMETER_ANON {
     pub Boolean: UCHAR,
 }
 
+pub const PROCESS_EXCEPTION_PORT_ALL_STATE_BITS: u32 = 0x00000003;
+pub const PROCESS_EXCEPTION_PORT_ALL_STATE_FLAGS: ULONG_PTR = (1 << PROCESS_EXCEPTION_PORT_ALL_STATE_BITS) - 1;
+
+#[repr(C)]
+pub struct LDT_ENTRY {
+    pub LimitLow: USHORT,
+    pub BaseLow: USHORT,
+    pub HighWord: LDT_ENTRY_HIGH_WORD,
+}
+pub type PLDT_ENTRY = *mut LDT_ENTRY;
+
+#[repr(C)]
+pub union LDT_ENTRY_HIGH_WORD {
+    pub Bytes: LDT_ENTRY_BYTES,
+    pub Bits: LDT_ENTRY_BITS,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct LDT_ENTRY_BYTES {
+    pub BaseMid: UCHAR,
+    pub Flags1: UCHAR,
+    pub Flags2: UCHAR,
+    pub BaseHi: UCHAR,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct LDT_ENTRY_BITS {
+    pub BaseMid: u32,
+    pub Type: u32,
+    pub Dpl: u32,
+    pub Pres: u32,
+    pub LimitHi: u32,
+    pub Sys: u32,
+    pub Reserved_0: u32,
+    pub Default_Big: u32,
+    pub Granularity: u32,
+    pub BaseHi: u32,
+}
+
+#[repr(C)]
+pub struct PROCESS_LDT_INFORMATION {
+    pub Start: ULONG,
+    pub Length: ULONG,
+    pub LdtEntries: [LDT_ENTRY; 1],
+}
+pub type PPROCESS_LDT_INFORMATION = *mut PROCESS_LDT_INFORMATION;
+
+#[repr(C)]
+pub struct PROCESS_LDT_SIZE {
+    pub Length: ULONG,
+}
+pub type PPROCESS_LDT_SIZE = *mut PROCESS_LDT_SIZE;
+
+#[repr(C)]
+pub struct PROCESS_WS_WATCH_INFORMATION {
+    pub FaultingPc: PVOID,
+    pub FaultingVa: PVOID,
+}
+pub type PPROCESS_WS_WATCH_INFORMATION = *mut PROCESS_WS_WATCH_INFORMATION;
+
 #[inline]
 pub fn NtCurrentTeb() -> PTEB {
     unsafe {

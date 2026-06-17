@@ -9,3 +9,6 @@ license = "MIT"
 
 [dependencies]
 ntapi = { path = "../ntapi", features = ["ntmmapi"] }
+anyhow = { version = "1.0.102", default-features = false }
+pelite = "0.10.0"
+tools = { path = "../tools", features = [] }

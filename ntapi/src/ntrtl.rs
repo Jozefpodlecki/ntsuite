@@ -76,13 +76,6 @@ macro_rules! RTL_POINTER_TO_OFFSET {
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct LIST_ENTRY {
-    pub Flink: *mut LIST_ENTRY,
-    pub Blink: *mut LIST_ENTRY,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone)]
 pub struct SINGLE_LIST_ENTRY {
     pub Next: *mut SINGLE_LIST_ENTRY,
 }
@@ -965,6 +958,13 @@ unsafe extern "system" {
         RelativeName: PRTL_RELATIVE_NAME_U,
     ) -> BOOLEAN;
 
+    pub fn RtlNtPathNameToDosPathName(
+        Flags: ULONG,
+        Path: PRTL_UNICODE_STRING_BUFFER,
+        Disposition: PULONG,
+        FilePart: *mut PWSTR,
+    ) -> NTSTATUS;
+
     pub fn RtlReleaseRelativeName(RelativeName: PRTL_RELATIVE_NAME_U);
 
     pub fn RtlCreateHeap(
@@ -1526,13 +1526,11 @@ pub struct RTL_BUFFER {
 pub type PRTL_BUFFER = *mut RTL_BUFFER;
 
 #[repr(C)]
-#[derive(Copy, Clone)]
 pub struct RTL_UNICODE_STRING_BUFFER {
     pub String: UNICODE_STRING,
     pub ByteBuffer: RTL_BUFFER,
     pub MinimumStaticBufferForTerminalNul: [UCHAR; 2],
 }
-
 pub type PRTL_UNICODE_STRING_BUFFER = *mut RTL_UNICODE_STRING_BUFFER;
 
 #[repr(C)]
@@ -1832,7 +1830,6 @@ pub type POBJECT_BOUNDARY_DESCRIPTOR = PVOID;
 pub type PNT_PRODUCT_TYPE = *mut NT_PRODUCT_TYPE;
 
 pub type WNF_STATE_NAME = ULONG64;
-pub type PWNF_TYPE_ID = *mut WNF_TYPE_ID;
 pub type PWNF_USER_CALLBACK = Option<unsafe extern "system" fn(
     StateName: WNF_STATE_NAME,
     ChangeStamp: WNF_CHANGE_STAMP,

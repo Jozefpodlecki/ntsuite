@@ -12,12 +12,6 @@ pub fn generate_code(version: String, functions: Vec<Function>) -> Result<()> {
     let version_sanitized = version.replace('.', "_");
     let file_name = format!("v{version_sanitized}");
 
-    let total = functions
-        .iter()
-        .filter(|f| matches!(f.category, FunctionCategory::Syscall(_)));
-
-    println!("{}", total.count());
-
     for func in functions
         .iter()
         .filter(|f| matches!(f.category, FunctionCategory::Syscall(_)))
@@ -59,7 +53,7 @@ pub fn generate_code(version: String, functions: Vec<Function>) -> Result<()> {
     }
     
     let mut output = scope.to_string();
-output = r#"use ntapi::{ntdef::*, ntexapi::*, ntioapi::*, ntmmapi::*, ntseapi::*, ntrtl::*, nttmapi::*};
+output = r#"use ntapi::{ntdef::*, ntdbg::*, ntobapi::*, ntexapi::*, ntioapi::*, ntkeapi::*, ntmmapi::*, ntseapi::*, ntregapi::*, ntpsapi::*, ntpoapi::*, ntlpcapi::*, ntrtl::*, nttmapi::*};
 
 "#.to_string() + &output;
     let output_path = format!(r#"C:\repos\ntsuite\ntsyscalls\src\{file_name}.rs"#);

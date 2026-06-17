@@ -24,6 +24,32 @@ impl<const N: usize> U16CStackString<N> {
         Some(Self { buf, len })
     }
 
+    pub fn from_ptr(ptr: *const u16) -> Option<Self> {
+        if ptr.is_null() {
+            return None;
+        }
+        
+        let mut buf = [0u16; N];
+        let mut len = 0;
+        
+        unsafe {
+            let mut i = 0;
+            while len < N - 1 {
+                let ch = *ptr.add(i);
+                if ch == 0 {
+                    break;
+                }
+                buf[len] = ch;
+                len += 1;
+                i += 1;
+            }
+        }
+        
+        buf[len] = 0;
+        
+        Some(Self { buf, len })
+    }
+
     pub fn push_str(&mut self, value: &str) -> bool {
         for ch in value.encode_utf16() {
             if self.len + 1 >= N {

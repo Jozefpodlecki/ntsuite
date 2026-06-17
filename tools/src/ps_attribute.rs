@@ -1,11 +1,24 @@
 use core::mem;
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
+#[cfg(feature = "alloc")]
+use alloc::vec;
+
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+
 use ntapi::{ntdef::ULONG_PTR, ntmmapi::SECTION_IMAGE_INFORMATION, ntpsapi::*, ntrtl::CLIENT_ID};
 
 use crate::U16CStackString;
 
 pub const PS_ATTRIBUTE_CHPE: ULONG_PTR = 0x0006001A;
 
+#[cfg(feature = "alloc")]
 pub enum PsAttribute {
     ImageName(Box<str>),
     ImageInfo,
@@ -17,6 +30,7 @@ pub enum PsAttribute {
     Chpe(bool),
 }
 
+#[cfg(feature = "alloc")]
 impl PsAttribute {
     pub fn to_ps_attribute(self) -> PS_ATTRIBUTE {
         let mut attr: PS_ATTRIBUTE = unsafe { core::mem::zeroed() };
@@ -62,8 +76,10 @@ impl PsAttribute {
 }
 
 
+#[cfg(feature = "alloc")]
 pub struct AttributeListBuilder(Vec<PsAttribute>);
 
+#[cfg(feature = "alloc")]
 impl AttributeListBuilder {
     pub fn new() -> Self {
         Self(vec![])

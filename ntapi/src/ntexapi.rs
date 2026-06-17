@@ -1116,3 +1116,7 @@ pub struct T2_SET_PARAMETERS_V0 {
     pub NoWakeTolerance: LONGLONG,
 }
 pub type PT2_SET_PARAMETERS = *mut T2_SET_PARAMETERS_V0;
+
+pub const ETW_MAX_PROFILING_SOURCES: u32 = 4;
+pub const ETW_MAX_PMC_EVENTS: u32 = 4;
+pub const ETW_MAX_PMC_COUNTERS: u32 = 4;

@@ -1,6 +1,7 @@
 #![feature(naked_functions_rustic_abi)]
 
-use ntapi::{ntdef::*, ntioapi::{IO_STATUS_BLOCK, NtDeviceIoControlFile}};
+use ntapi::{ntdef::*, ntioapi::{IO_STATUS_BLOCK, NtDeviceIoControlFile, NtWriteFile}, ntpebteb::PEB};
+use tools::U16CStackString;
 
 const IOCTL_CONSOLE_WRITE: ULONG = 0x500016;
 
@@ -11,6 +12,14 @@ pub unsafe fn is_console_attached() -> bool {
         "mov rax, [rax + 0x20]",
         "cmp qword ptr [rax + 0x10], 0",
         "setne al",
+        "ret"
+    );
+}
+
+#[unsafe(naked)]
+pub unsafe fn get_peb() -> *mut PEB {
+    core::arch::naked_asm!(
+        "mov rax, gs:[0x60]",
         "ret"
     );
 }
@@ -97,6 +106,28 @@ pub fn write_console_w(
     }
 }
 
+pub fn get_std_handle_1(n_std_handle: u32) -> HANDLE {
+    unsafe {
+        let peb_ptr = get_peb();
+        let peb = &*peb_ptr;
+        
+        let process_params_ptr = peb.ProcessParameters;
+        
+        if process_params_ptr.is_null() {
+            return core::ptr::null_mut();
+        }
+
+        let process_params = &*process_params_ptr;
+        
+        match n_std_handle {
+            STD_INPUT_HANDLE => process_params.StandardInput,
+            STD_OUTPUT_HANDLE => process_params.StandardOutput,
+            STD_ERROR_HANDLE => process_params.StandardError,
+            _ => core::ptr::null_mut(),
+        }
+    }
+}
+
 #[unsafe(naked)]
 pub unsafe fn get_std_handle(n_std_handle: u32) -> HANDLE {
     core::arch::naked_asm!(
@@ -148,23 +179,103 @@ pub unsafe fn get_std_handle(n_std_handle: u32) -> HANDLE {
     );
 }
 
-pub const STD_OUTPUT_HANDLE: u32 = 0xFFFFFFF5u32;
-pub const STD_INPUT_HANDLE: u32 = 0xFFFFFFF6u32;
-pub const STD_ERROR_HANDLE: u32 = 0xFFFFFFF4u32;
+fn write_console_with_nt_write(
+    handle: HANDLE,
+    buffer: *const u8,
+    bytes_to_write: u32,
+    bytes_written: *mut u32,
+) -> NTSTATUS {
+    unsafe {
+        let mut io_status_block: IO_STATUS_BLOCK = core::mem::zeroed();
+        
+        if handle.is_null() || buffer.is_null() || bytes_to_write == 0 {
+            return STATUS_INVALID_HANDLE;
+        }
+        
+        if !is_console_attached() {
+            return STATUS_INVALID_HANDLE;
+        }
+        
+        let status = NtWriteFile(
+            handle,
+            core::ptr::null_mut(),
+            None,
+            core::ptr::null_mut(),
+            &mut io_status_block,
+            buffer as PVOID,
+            bytes_to_write as ULONG,
+            core::ptr::null_mut(),
+            core::ptr::null_mut(),
+        );
+        
+        if status >= 0 && !bytes_written.is_null() {
+            *bytes_written = io_status_block.Information as u32;
+        }
+        
+        status
+    }
+}
+
+fn write_console_utf16_with_nt_write(
+    handle: HANDLE,
+    buffer: *const u16,
+    chars_to_write: u32,
+    chars_written: *mut u32,
+) -> NTSTATUS {
+    unsafe {
+        let mut io_status_block: IO_STATUS_BLOCK = core::mem::zeroed();
+        
+        if handle.is_null() || buffer.is_null() || chars_to_write == 0 {
+            return STATUS_INVALID_HANDLE;
+        }
+        
+        let bytes_to_write = chars_to_write * 2;
+        
+        let status = NtWriteFile(
+            handle,
+            core::ptr::null_mut(),
+            None,
+            core::ptr::null_mut(),
+            &mut io_status_block,
+            buffer as PVOID,
+            bytes_to_write,
+            core::ptr::null_mut(),
+            core::ptr::null_mut(),
+        );
+        
+        if status >= 0 && !chars_written.is_null() {
+            let bytes_written = io_status_block.Information as u32;
+            *chars_written = bytes_written / 2;
+        }
+        
+        status
+    }
+}
+
+
 
 fn main() {
     unsafe {
-        let handle = get_std_handle(STD_OUTPUT_HANDLE);
-        let msg = "Hello, World!\r\n";
-        let mut utf16: [u16; 256] = [0; 256];
-        let mut len = 0;
-        
-        for (i, ch) in msg.encode_utf16().enumerate() {
-            utf16[i] = ch;
-            len = i + 1;
-        }
+        let handle = get_std_handle_1(STD_OUTPUT_HANDLE);
+        let utf16 = U16CStackString::<260>::from_str("Hello, World!\r\n").unwrap();
         
         let mut written = 0;
-        write_console_w(handle, utf16.as_ptr(), len as u32, &mut written, core::ptr::null_mut());
+        // write_console_w(handle, utf16.as_ptr(), len as u32, &mut written, core::ptr::null_mut());
+        // let status = write_console_with_nt_write(
+        //     handle,
+        //     msg_bytes.as_ptr(),
+        //     msg_bytes.len() as u32,
+        //     &mut written,
+        // );
+
+        let mut written = 0;
+        let status = write_console_utf16_with_nt_write(
+            handle,
+            utf16.as_ptr(),
+            utf16.len() as u32,
+            &mut written,
+        );
+
+        println!("{:X}", status);
     }
 }

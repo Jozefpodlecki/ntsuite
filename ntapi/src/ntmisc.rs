@@ -99,3 +99,18 @@ pub struct AHC_SERVICE_LOOKUP_CDB {
     pub Name: UNICODE_STRING,
 }
 pub type PAHC_SERVICE_LOOKUP_CDB = *mut AHC_SERVICE_LOOKUP_CDB;
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PROCESS_ACTIVITY_TYPE {
+    ProcessActivityTypeAudio = 0,
+    ProcessActivityTypeMax = 1,
+}
+
+unsafe extern "system" {
+    pub fn NtAcquireProcessActivityReference(
+        ActivityReferenceHandle: PHANDLE,
+        ParentProcessHandle: HANDLE,
+        ProcessActivityType: ULONG,
+    ) -> NTSTATUS;
+}
